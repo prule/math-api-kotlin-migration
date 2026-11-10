@@ -12,7 +12,7 @@ Gate before item 1: audit the Java repo (see `CLAUDE.md` → Milestone gates).
 | # | Change | Capability | Status |
 |---|---|---|---|
 | 1 | `add-kotlin-skeleton` | (none: tooling and standards) | Done |
-| 2 | `add-contract-suite` | (none: test harness) | Not started |
+| 2 | `add-contract-suite` | (none: test harness) | Done |
 | 3 | `add-calculation` | `calculation` | Not started |
 | 4 | `add-service-health` | `service-health` | Not started |
 | 5 | `add-api-documentation` | `api-documentation` | Not started |

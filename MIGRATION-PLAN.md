@@ -55,7 +55,7 @@ differences go in `docs/MIGRATION-LOG.md`. Starting set, from reading the code:
 - RB-8 Parse limits (Jackson): body ≤ 16,384 chars, number ≤ 1,000 chars, string ≤ 1,000 chars. A breach → `invalid-request`.
 - RB-9 **Error precedence:** invalid-request → unknown-operation → operand-out-of-range → division-by-zero.
   (`{"operation":"NOPE","a":1}` is invalid-request, not unknown-operation.)
-- RB-8a The body limit is counted in **bytes**, although the error says "characters" (`docs/JAVA-AUDIT.md` #1, a source defect; port as is).
+- RB-8a The body limit is counted in **bytes**, although the error says "characters" (`docs/MIGRATION-LOG.md` Source defect 1; port as is).
 - RB-8b Lenient parsing, from Jackson defaults (confirmed by curl):
   - unknown extra fields are ignored;
   - for duplicate keys, the last value wins;
@@ -86,6 +86,22 @@ differences go in `docs/MIGRATION-LOG.md`. Starting set, from reading the code:
 - RB-19 The `operation` enum in the docs = the domain's Operation list, in order. `a`/`b` are typed `[number, string]`. All three fields are required.
 - RB-20 The documented responses are exactly 200, 400, 415, 422. The 200 schema has 4 string fields. The ProblemDetail schema has only `type,title,status,detail,instance`.
 - RB-21 There is one example per problem slug, and each example equals the **real** response body.
+
+**Found by probing the running Java service (framework defaults, item 2)**
+- RB-22 Content negotiation:
+  - request bodies are accepted as `application/json`, any `application/*+json`, or `application/yaml`;
+  - any other type, or no `Content-Type` at all (read as `application/octet-stream`), gets 415, with an `Accept` header listing the three types;
+  - a success response is JSON by default, or YAML for `Accept: application/yaml`;
+  - errors are always `application/problem+json`.
+- RB-23 Protocol details:
+  - 405 carries `Allow: POST`, and `HEAD` on the endpoint is also 405;
+  - `OPTIONS` gets 200 with `Allow: POST,OPTIONS`;
+  - 406 carries an `Accept` header;
+  - a trailing slash is a different path, so it gets 404;
+  - framework error `detail` texts are Spring's own (e.g. `No static resource api/v1/nope.`).
+- RB-24 Health also returns `"groups":["liveness","readiness"]`. `/actuator/health/liveness` and `/readiness` return `{"status":"UP"}`. An unknown group returns 404 with an **empty body** (the only error that is not Problem Details). Unlike the calculations endpoint, `/actuator/health/` with a trailing slash answers 200. The content type is `application/vnd.spring-boot.actuator.v3+json`.
+- RB-25 `/v3/api-docs.yaml` serves the same docs as YAML (`application/vnd.oai.openapi`).
+- RB-26 No CORS headers and no response compression, even when the client asks for them.
 
 Gaps to record as *unknown, not assumed*: no auth, no rate limiting, no CORS, no logging format, no port config.
 Each takes the platform default in the Java app. Record the Ktor default you get, and list each as a known difference.

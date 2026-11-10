@@ -37,6 +37,10 @@ The contract suite runs against both services over HTTP:
 - `BASE_URL=http://localhost:8080 ./gradlew contractTest` runs the suite against Java;
   `BASE_URL=http://localhost:8081 ./gradlew contractTest` runs it against Kotlin.
 
+- `BASE_URL=http://localhost:8080 ./gradlew contractTest -Precord --tests '*Golden*'` re-records
+  `src/contractTest/resources/golden/responses.json` from Java. It refuses any other service. Re-record only
+  when the corpus changes, and review the golden diff like code.
+
 Never edit the Java repo.
 
 ## Keep the docs current
