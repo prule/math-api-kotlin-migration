@@ -4,13 +4,14 @@ context: |
   Migration of ../mathi-api-one-agent-2 (Spring Boot 4 / Java 25) to Kotlin + Ktor, keeping clean architecture
   and identical wire behaviour. The Java CODE is the only spec: never read its docs/, openspec/, reports/, logs/,
   README.md, CLAUDE.md or git history (except backlog item 8).
-  Evidence rule: every requirement cites a Java path:line or a Java test method. No evidence -> record it as an
-  Unknown in docs/MIGRATION-LOG.md instead. Backlog item 7 is new behaviour and is exempt.
+  Evidence rule: every requirement cites a Java path:line, a Java test method, or (for framework defaults) a golden
+  case / contract test green against the running Java service. No evidence -> record it as an Unknown in
+  docs/MIGRATION-LOG.md instead. Backlog item 7 is new behaviour and is exempt.
   Done needs contract tests green against BOTH services (Java :8080, Kotlin :8081) from item 3 on.
 
 rules:
   specs:
-    - Each requirement ends with an "Evidence:" line naming Java path:line or test method(s)
+    - Each requirement ends with an "Evidence:" line naming Java path:line, Java test method(s), or golden case / contract test
 
 # Project context (optional)
 # Add only constraints that should guide OpenSpec artifacts and workflows.

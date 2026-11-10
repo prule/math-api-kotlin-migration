@@ -21,8 +21,6 @@ class ArchitectureTest {
         val LAYERS_DEPEND_INWARDS: ArchRule =
             layeredArchitecture()
                 .consideringOnlyDependenciesInLayers()
-                // shortcut: allows empty layers until item 3 fills them; remove in add-calculation
-                .withOptionalLayers(true)
                 .layer("Domain")
                 .definedBy(DOMAIN)
                 .layer("Application")
@@ -49,8 +47,6 @@ class ArchitectureTest {
                 .should()
                 .dependOnClassesThat()
                 .resideInAnyPackage("io.ktor..", "com.fasterxml..", "tools.jackson..")
-                // shortcut: allows an empty domain until item 3 fills it; remove in add-calculation
-                .allowEmptyShould(true)
 
         // All of Ktor, not just its web part: with no DI framework, application code never needs it.
         @ArchTest
@@ -62,7 +58,5 @@ class ArchitectureTest {
                 .should()
                 .dependOnClassesThat()
                 .resideInAnyPackage("io.ktor..", "com.paulrule.mathapi.adapter..")
-                // shortcut: allows an empty application layer until item 3 fills it; remove in add-calculation
-                .allowEmptyShould(true)
     }
 }

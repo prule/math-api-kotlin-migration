@@ -103,6 +103,36 @@ differences go in `docs/MIGRATION-LOG.md`. Starting set, from reading the code:
 - RB-25 `/v3/api-docs.yaml` serves the same docs as YAML (`application/vnd.oai.openapi`).
 - RB-26 No CORS headers and no response compression, even when the client asks for them.
 
+**Found by probing for item 3 (Spring content negotiation and Jackson 3 parsing defaults)**
+- RB-27 Choosing the success response type:
+  - candidates are the `Accept` types compatible with `application/json` or `application/*+json`, in `Accept` order, most specific first;
+  - the first concrete type wins and is echoed back, parameters included (`application/vnd.a+json`, `application/problem+json`, `application/json;charset=utf-8`);
+  - `*/*`, `application/*` or no `Accept` gives `application/json`;
+  - `Accept` types are ordered by specificity before matching;
+  - `q` values only matter for validity: `q=0` is not excluded, and `q>1` or an unparseable `Accept` gives 406 with an **empty body**;
+  - with an unparseable `Accept`, **every** response, errors included, keeps its status and headers but has no body (item 3 code review);
+  - parameter names are lowercased, a parameter without a value is ignored, separators inside quotes are kept, and an unknown `charset` makes the type invalid;
+  - no compatible type gives a 406 problem with detail `Acceptable representations: [...]`;
+  - domain errors ignore `Accept`.
+- RB-28 Request content types:
+  - accepted when compatible with `application/json` or `application/*+json` (any case, any parameters, surrounding spaces);
+  - otherwise 415 with detail `Content-Type '<type>' is not supported.`;
+  - in that detail, `<type>` is lowercased, its parameters are joined with `;`, and `;charset=UTF-8` is appended when no charset is given;
+  - a missing type is reported as `application/octet-stream` (no charset), and an unparseable one as `Could not parse Content-Type.`;
+  - with no body and no type, the response is invalid-request;
+  - a declared non-Unicode charset is decoded;
+  - a wildcard type gets 500 from Java (source defect 4) and 415 from Kotlin (Accepted difference 2).
+- RB-29 Strict JSON:
+  - trailing tokens, a second document, comments, single quotes, `NaN`, leading zeros and a top-level `null` are all invalid-request;
+  - nesting deeper than 500 levels (the root counts) is invalid-request;
+  - an `operation` of `1.5` is coerced to the string `"1.5"`; `null` or `{}` is invalid-request;
+  - operand strings like `"1."` and `".5"` are accepted, but `"NaN"`, `"0x10"` and `"1_000"` are not.
+- RB-30 Framework error wording (the user chose to copy Spring's):
+  - 404 `No static resource <path without leading or trailing slash>.`;
+  - 405 `Method '<METHOD>' is not supported.`, and `HEAD` gets the headers but no body;
+  - 415 and 406 as in RB-27/28;
+  - titles are the reason phrases, and `instance` is the request path.
+
 Gaps to record as *unknown, not assumed*: no auth, no rate limiting, no CORS, no logging format, no port config.
 Each takes the platform default in the Java app. Record the Ktor default you get, and list each as a known difference.
 

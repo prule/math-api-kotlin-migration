@@ -25,7 +25,9 @@ Read before working:
 
 ## Evidence rule
 
-Every requirement in a spec delta cites its evidence: a Java `path:line`, or a Java test method. A requirement
+Every requirement in a spec delta cites its evidence: a Java `path:line`, a Java test method, or, for behaviour
+that comes from framework defaults, an observation of the running Java service (a golden case in
+`src/contractTest/resources/golden/responses.json`, or a contract test that is green against Java). A requirement
 with no evidence is not allowed; record it under **Unknowns** instead. Never invent behaviour the Java code
 doesn't show. The only exception is backlog item 7, which is new behaviour and says so.
 

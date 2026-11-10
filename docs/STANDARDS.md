@@ -7,7 +7,7 @@ code, not from that document.
 
 ## 1. Stack
 
-- Kotlin (JVM toolchain 25), Ktor (Netty), Jackson 2 (`com.fasterxml`, the version Ktor brings) for JSON, Gradle Kotlin DSL with the wrapper.
+- Kotlin (JVM toolchain 25), Ktor (Netty), Jackson 2 (`com.fasterxml`) 2.22.2, pinned to the version `ktor-serialization-jackson` 3.6.1 uses, for JSON, Gradle Kotlin DSL with the wrapper.
 - `./gradlew build` is the gate: compile, tests, ArchUnit, and `spotlessCheck` (ktlint).
 - CI runs `./gradlew build` on every pull request and every push to `main`.
 
@@ -30,6 +30,10 @@ Clean architecture in one Gradle module, with layers as packages under `com.paul
   it on purpose, and `ArchitectureRulesAreLiveTest` proves the rule rejects that fixture. A new rule comes with a
   new fixture.
 - Never weaken an ArchUnit rule to get green.
+- Kotlin adaptation: the root package's `Application.kt` is the composition root. It sits outside every layer
+  and wires `config` (use cases) to the web adapter, playing the part of the Spring container, which found the
+  Java controller by component scanning. So no layer depends on `adapter.inbound.web`.
+  See `openspec/changes/archive/2026-11-10-add-calculation/design.md` Decision 7.
 - Kotlin adaptation (a design decision, not Java evidence): the package is `adapter.inbound.web`, not
   `adapter.in.web`, because `in` is a Kotlin keyword. See `openspec/changes/archive/2026-11-10-add-kotlin-skeleton/design.md` Decision 7.
 

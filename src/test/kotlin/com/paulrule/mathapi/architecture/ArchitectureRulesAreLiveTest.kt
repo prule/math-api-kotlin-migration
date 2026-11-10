@@ -3,17 +3,23 @@ package com.paulrule.mathapi.architecture
 import com.paulrule.mathapi.adapter.inbound.web.fixture.WebType
 import com.paulrule.mathapi.application.fixture.UsesKtorCall
 import com.paulrule.mathapi.application.fixture.UsesWeb
+import com.paulrule.mathapi.domain.fixture.UsesJackson
 import com.paulrule.mathapi.domain.fixture.UsesKtor
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.lang.ArchRule
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
-// The layers are still empty, so ArchitectureTest would pass even with a broken rule.
+// Each rule (and each half of a rule) is checked against a class that breaks it, so a rule that can never fail is caught.
 class ArchitectureRulesAreLiveTest {
     @Test
     fun `domain rule rejects a domain class that uses Ktor`() {
         assertRejects(ArchitectureTest.DOMAIN_IS_FRAMEWORK_FREE, UsesKtor::class.java, UsesKtor::class.java)
+    }
+
+    @Test
+    fun `domain rule rejects a domain class that uses Jackson`() {
+        assertRejects(ArchitectureTest.DOMAIN_IS_FRAMEWORK_FREE, UsesJackson::class.java, UsesJackson::class.java)
     }
 
     @Test

@@ -1161,6 +1161,744 @@
       "type" : "/problems/unknown-operation"
     }
   },
+  "content type 'TEXT/PLAIN'" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Content-Type 'text/plain;charset=UTF-8' is not supported.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'text/plain; charset=ISO-8859-1'" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Content-Type 'text/plain;charset=ISO-8859-1' is not supported.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'application/octet-stream'" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Content-Type 'application/octet-stream;charset=UTF-8' is not supported.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'image/png'" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Content-Type 'image/png;charset=UTF-8' is not supported.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'application/x-www-form-urlencoded'" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Content-Type 'application/x-www-form-urlencoded;charset=UTF-8' is not supported.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'multipart/form-data; boundary=x'" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Content-Type 'multipart/form-data;boundary=x;charset=UTF-8' is not supported.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'garbage'" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Could not parse Content-Type.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'application/xml'" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Content-Type 'application/xml;charset=UTF-8' is not supported.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'APPLICATION/JSON'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "content type 'application/json;charset=ISO-8859-1'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "content type ' application/json '" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "content type 'application/json;foo=bar'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "content type 'application/json-patch+json'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "content type 'application/problem+json'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'application/vnd.foo+json'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.foo+json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'application/*'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept '*/*'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'text/plain, application/json;q=0.5'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'application/json;q=0'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'garbage'" : {
+    "status" : 406,
+    "body" : ""
+  },
+  "accept 'application/json, text/plain'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'text/plain;q=0.9, application/vnd.a+json;q=0.1'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.a+json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'application/vnd.a+json, application/json'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.a+json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'application/json;charset=utf-8'" : {
+    "status" : 200,
+    "Content-Type" : "application/json;charset=utf-8",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'text/*'" : {
+    "status" : 406,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/*+json, application/yaml",
+    "body" : {
+      "detail" : "Acceptable representations: [application/json, application/*+json, application/yaml].",
+      "instance" : "/api/v1/calculations",
+      "status" : 406,
+      "title" : "Not Acceptable",
+      "type" : "about:blank"
+    }
+  },
+  "accept 'application/xml'" : {
+    "status" : 406,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/*+json, application/yaml",
+    "body" : {
+      "detail" : "Acceptable representations: [application/json, application/*+json, application/yaml].",
+      "instance" : "/api/v1/calculations",
+      "status" : 406,
+      "title" : "Not Acceptable",
+      "type" : "about:blank"
+    }
+  },
+  "accept '*/*;q=0.1, application/xml'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'application/json, application/problem+json;q=2'" : {
+    "status" : 406,
+    "body" : ""
+  },
+  "accept text/plain, unknown operation" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "Unknown operation 'NOPE'. Supported operations: ADD, SUBTRACT, MULTIPLY, DIVIDE.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Unknown operation",
+      "type" : "/problems/unknown-operation"
+    }
+  },
+  "accept text/plain, invalid body" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": \"ADD\", \"a\": 1, \"b\": 2} xyz" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": \"ADD\", \"a\": 1, \"b\": 2}{\"operation\": \"ADD\", \"a\": 1, \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": \"ADD\", /* c */ \"a\": 1, \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {'operation': 'ADD', 'a': 1, 'b': 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": \"ADD\", \"a\": NaN, \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": \"ADD\", \"a\": 01, \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict null" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": null, \"a\": 1, \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": {}, \"a\": 1, \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": 1.5, \"a\": 1, \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "Unknown operation '1.5'. Supported operations: ADD, SUBTRACT, MULTIPLY, DIVIDE.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Unknown operation",
+      "type" : "/problems/unknown-operation"
+    }
+  },
+  "strict {\"operation\": \"ADD\", \"a\": \"1.\", \"b\": \".5\"}" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "0.5",
+      "result" : "1.5"
+    }
+  },
+  "strict {\"operation\": \"ADD\", \"a\": \"NaN\", \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": \"ADD\", \"a\": \"0x10\", \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": \"ADD\", \"a\": \"1_000\", \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": \"ADD\", \"a\": \"١٢\", \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "nesting 499" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "nesting 500" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "body of 1 MiB" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "accept garbage, invalid body" : {
+    "status" : 400,
+    "body" : ""
+  },
+  "accept garbage, unknown operation" : {
+    "status" : 400,
+    "body" : ""
+  },
+  "accept garbage, division by zero" : {
+    "status" : 422,
+    "body" : ""
+  },
+  "accept garbage, operand out of range" : {
+    "status" : 400,
+    "body" : ""
+  },
+  "accept garbage, text/plain" : {
+    "status" : 415,
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : ""
+  },
+  "accept garbage, GET calculations" : {
+    "status" : 405,
+    "Allow" : "POST",
+    "body" : ""
+  },
+  "accept garbage, GET /api/v1/nope" : {
+    "status" : 404,
+    "body" : ""
+  },
+  "content type with quoted ';'" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Content-Type 'multipart/form-data;boundary=\"a;b\";charset=UTF-8' is not supported.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "accept with quoted ','" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.a+json;x=\"1,2\"",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "no body, no content type" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The request body must be JSON with operation, a and b; a and b must be decimal numbers. The body may be at most 16,384 characters, and no value more than 1,000.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Invalid request",
+      "type" : "/problems/invalid-request"
+    }
+  },
+  "no body, text/plain" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Content-Type 'text/plain;charset=UTF-8' is not supported.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "accept 'application/*;q=1, application/vnd.c+json'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.c+json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept ','" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'application/json;foo'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'application/json;charset=bogus'" : {
+    "status" : 406,
+    "body" : ""
+  },
+  "accept 'APPLICATION/JSON;Charset=UTF-8'" : {
+    "status" : 200,
+    "Content-Type" : "application/json;charset=UTF-8",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "content type 'application/json;foo'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "content type 'application/json;charset=bogus'" : {
+    "status" : 415,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/json, application/yaml, application/*+json",
+    "body" : {
+      "detail" : "Could not parse Content-Type.",
+      "instance" : "/api/v1/calculations",
+      "status" : 415,
+      "title" : "Unsupported Media Type",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'application/json;Charset=UTF-8'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "latin-1 body" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "Unknown operation 'é'. Supported operations: ADD, SUBTRACT, MULTIPLY, DIVIDE.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Unknown operation",
+      "type" : "/problems/unknown-operation"
+    }
+  },
+  "content type '*/*'" : {
+    "status" : 500,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The calculation could not be completed.",
+      "instance" : "/api/v1/calculations",
+      "status" : 500,
+      "title" : "Internal Server Error",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'application/*'" : {
+    "status" : 500,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The calculation could not be completed.",
+      "instance" : "/api/v1/calculations",
+      "status" : 500,
+      "title" : "Internal Server Error",
+      "type" : "about:blank"
+    }
+  },
+  "content type 'application/*+json'" : {
+    "status" : 500,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The calculation could not be completed.",
+      "instance" : "/api/v1/calculations",
+      "status" : 500,
+      "title" : "Internal Server Error",
+      "type" : "about:blank"
+    }
+  },
+  "double slash" : {
+    "status" : 404,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "No static resource api/v1/calculations.",
+      "instance" : "//api/v1/calculations",
+      "status" : 404,
+      "title" : "Not Found",
+      "type" : "about:blank"
+    }
+  },
+  "path parameter" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "CORS preflight" : {
+    "status" : 200,
+    "Allow" : "GET, HEAD, POST, PUT, DELETE, OPTIONS, PATCH",
+    "body" : ""
+  },
+  "TRACE calculations" : {
+    "status" : 405,
+    "Content-Type" : "application/json",
+    "Allow" : "HEAD, DELETE, POST, GET, OPTIONS, PUT",
+    "body" : {
+      "timestamp" : "{timestamp}",
+      "status" : 405,
+      "error" : "Method Not Allowed",
+      "path" : "/api/v1/calculations"
+    }
+  },
   "GET calculations" : {
     "status" : 405,
     "Content-Type" : "application/problem+json",

@@ -22,12 +22,16 @@ repositories {
 dependencies {
     implementation("io.ktor:ktor-server-core:3.6.1")
     implementation("io.ktor:ktor-server-netty:3.6.1")
+    implementation("io.ktor:ktor-server-status-pages:3.6.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.22.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.2")
     runtimeOnly("ch.qos.logback:logback-classic:1.5.38")
 
     testImplementation(platform("org.junit:junit-bom:$junitVersion"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:$assertjVersion")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.5.1")
+    testImplementation("io.ktor:ktor-server-test-host:3.6.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -51,6 +55,13 @@ testing {
                         "goldenFile",
                         layout.projectDirectory
                             .file("src/contractTest/resources/golden/responses.json")
+                            .asFile.path,
+                    )
+                    systemProperty(
+                        "goldenActualFile",
+                        layout.buildDirectory
+                            .file("golden-actual.json")
+                            .get()
                             .asFile.path,
                     )
                     outputs.upToDateWhen { false } // the service under test is outside Gradle's view
