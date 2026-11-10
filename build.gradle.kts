@@ -25,6 +25,8 @@ dependencies {
     implementation("io.ktor:ktor-server-status-pages:3.6.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.22.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.2")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.22.2")
+    runtimeOnly("org.webjars:swagger-ui:5.34.0")
     runtimeOnly("ch.qos.logback:logback-classic:1.5.38")
 
     testImplementation(platform("org.junit:junit-bom:$junitVersion"))

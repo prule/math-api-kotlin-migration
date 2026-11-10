@@ -21,6 +21,7 @@ Kotlin default next to each one.
 | Graceful shutdown | Spring Boot default (graceful) | (item 6) |
 | Health when degraded | Never observed: no health contributors, so always `UP` | Always `UP` (item 4) |
 | Readiness during shutdown | Spring Boot reports `OUT_OF_SERVICE` while shutting down gracefully (framework default, not probed) | Always `UP` until the process stops (item 4) |
+| Swagger UI `Last-Modified` | The webjar entry's time, read in the JVM's time zone | The same, read the same way; equal on one machine, may differ by a zone offset if the two run in different zones (item 5) |
 | The 500 handler (RB-13) | Not reachable over HTTP; the Java test calls it directly | Unit test in item 3 |
 
 ## Accepted differences

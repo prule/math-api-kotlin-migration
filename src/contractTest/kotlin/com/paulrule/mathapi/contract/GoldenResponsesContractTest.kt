@@ -49,10 +49,14 @@ class GoldenResponsesContractTest {
 
     private fun capture(case: Case): ObjectNode {
         val response = send(case.method, case.path, case.body, case.headers, case.charset)
+        // A multipart/byteranges boundary is random on each response; it would never replay equal.
+        val boundary = response.contentType?.substringAfter("boundary=", "")?.ifEmpty { null }
         val node = JsonNodeFactory.instance.objectNode()
         node.put("status", response.status)
-        for (header in RECORDED_HEADERS) response.header(header)?.let { node.put(header, it.replace(BASE_URL, "{base}")) }
-        val text = response.body.replace(BASE_URL, "{base}")
+        for (header in RECORDED_HEADERS) {
+            response.header(header)?.let { node.put(header, normalise(it, boundary)) }
+        }
+        val text = normalise(response.body, boundary)
         if (response.contentType.orEmpty().contains("json") && text.isNotEmpty()) {
             val json = mapper.readTree(text)
             // Spring Boot's own error bodies (TRACE) carry a timestamp; it would never replay equal.
@@ -71,6 +75,12 @@ class GoldenResponsesContractTest {
         return overlay
     }
 
+    /** The base URL and any multipart boundary differ between runs and services, so they are recorded as placeholders. */
+    private fun normalise(
+        value: String,
+        boundary: String?,
+    ) = value.replace(BASE_URL, "{base}").let { v -> boundary?.let { v.replace(it, "{boundary}") } ?: v }
+
     class Case(
         val name: String,
         val method: String,
@@ -81,7 +91,18 @@ class GoldenResponsesContractTest {
     )
 
     companion object {
-        private val RECORDED_HEADERS = listOf("Content-Type", "Allow", "Accept", "Location")
+        private val RECORDED_HEADERS =
+            listOf(
+                "Content-Type",
+                "Allow",
+                "Accept",
+                "Location",
+                "Cache-Control",
+                "Last-Modified",
+                "Accept-Ranges",
+                "Content-Range",
+                "Content-Disposition",
+            )
         private val JSON = mapOf("Content-Type" to "application/json")
 
         private fun calc(
@@ -342,6 +363,157 @@ class GoldenResponsesContractTest {
                 }
                 add(Case("actuator index Host 'a/b'", "GET", "/actuator", headers = mapOf("Host" to "a/b")))
                 for (path in listOf("/actuator/env", "/actuator/")) add(Case("TRACE $path", "TRACE", path))
+                // Item 5: the API docs and Swagger UI, probed on the Java service. Large assets: HEAD only.
+                for (path in listOf("/v3/api-docs", "/v3/api-docs.yaml", "/v3/api-docs/swagger-config")) {
+                    add(Case("GET $path", "GET", path))
+                    add(Case("GET $path, Host header", "GET", path, headers = mapOf("Host" to "example.org:9999")))
+                    add(Case("GET $path, Host port 80", "GET", path, headers = mapOf("Host" to "example.org:80")))
+                    for (method in listOf("HEAD", "POST", "PUT", "OPTIONS")) add(Case("$method $path", method, path))
+                    for (accept in listOf(
+                        "application/json",
+                        "text/plain",
+                        "application/yaml",
+                        "garbage",
+                        "application/vnd.oai.openapi",
+                        "*/*",
+                    )) {
+                        add(Case("GET $path, accept '$accept'", "GET", path, headers = mapOf("Accept" to accept)))
+                    }
+                }
+                add(
+                    Case(
+                        "GET /v3/api-docs, X-Forwarded headers",
+                        "GET",
+                        "/v3/api-docs",
+                        headers =
+                            mapOf("X-Forwarded-Host" to "proxy.example", "X-Forwarded-Proto" to "https"),
+                    ),
+                )
+                for (path in listOf(
+                    "/v3/api-docs/",
+                    "/v3/api-docs/springdocDefault",
+                    "/swagger-ui.html?x=1",
+                    "/swagger-ui/",
+                    "/swagger-ui",
+                )) {
+                    add(Case("GET $path", "GET", path))
+                }
+                for (method in listOf("HEAD", "POST", "OPTIONS")) add(Case("$method /swagger-ui.html", method, "/swagger-ui.html"))
+                for (file in listOf("index.html", "swagger-initializer.js", "oauth2-redirect.html", "nope.js", "index.css")) {
+                    add(Case("GET /swagger-ui/$file", "GET", "/swagger-ui/$file"))
+                }
+                for (file in listOf(
+                    "swagger-ui-bundle.js",
+                    "swagger-ui-standalone-preset.js",
+                    "swagger-ui.css",
+                    "favicon-32x32.png",
+                    "favicon-16x16.png",
+                    "oauth2-redirect.js",
+                )) {
+                    add(Case("HEAD /swagger-ui/$file", "HEAD", "/swagger-ui/$file"))
+                }
+                for (method in listOf(
+                    "HEAD",
+                    "POST",
+                    "OPTIONS",
+                )) {
+                    add(Case("$method /swagger-ui/index.html", method, "/swagger-ui/index.html"))
+                }
+                add(
+                    Case(
+                        "GET /swagger-ui/index.html, accept text/plain",
+                        "GET",
+                        "/swagger-ui/index.html",
+                        headers =
+                            mapOf("Accept" to "text/plain"),
+                    ),
+                )
+                add(
+                    Case(
+                        "GET /swagger-ui/index.html, accept garbage",
+                        "GET",
+                        "/swagger-ui/index.html",
+                        headers =
+                            mapOf("Accept" to "garbage"),
+                    ),
+                )
+                add(Case("GET /swagger-ui/../v3/api-docs", "GET", "/swagger-ui/%2e%2e/v3/api-docs"))
+                val cssModified = "Sat, 07 Nov 2026 02:54:12 GMT" // the webjar entry's time, the same jar on both sides
+                add(
+                    Case(
+                        "GET /swagger-ui/swagger-ui.css, If-Modified-Since",
+                        "GET",
+                        "/swagger-ui/swagger-ui.css",
+                        headers =
+                            mapOf("If-Modified-Since" to cssModified),
+                    ),
+                )
+
+                fun ranged(
+                    name: String,
+                    method: String,
+                    file: String,
+                    range: String,
+                ) = Case(name, method, "/swagger-ui/$file", headers = mapOf("Range" to range))
+                add(ranged("GET /swagger-ui/index.css, Range", "GET", "index.css", "bytes=0-9"))
+                for (range in listOf(
+                    "bytes=500-",
+                    "bytes=99999999999-",
+                    "bytes=5-2",
+                    "bytes=-5",
+                    "bytes=0-9,20-29",
+                    "items=0-9",
+                    "bytes=abc",
+                    "bytes=190-",
+                )) {
+                    add(ranged("GET /swagger-ui/index.css, Range '$range'", "GET", "index.css", range))
+                }
+                add(ranged("GET /swagger-ui/index.html, Range", "GET", "index.html", "bytes=0-9"))
+                add(ranged("HEAD /swagger-ui/index.css, Range", "HEAD", "index.css", "bytes=0-9"))
+                // Item 5's code review.
+                for (method in listOf("OPTIONS", "POST", "DELETE")) {
+                    for (path in listOf("/swagger-ui/nope.js", "/swagger-ui/")) add(Case("$method $path", method, path))
+                }
+                val css = "/swagger-ui/swagger-ui.css"
+                for ((name, value) in listOf(
+                    "If-Modified-Since RFC 850" to ("If-Modified-Since" to "Saturday, 07-Nov-26 02:54:12 GMT"),
+                    "If-Modified-Since asctime" to ("If-Modified-Since" to "Sat Nov  7 02:54:12 2026"),
+                    "If-Modified-Since garbage" to ("If-Modified-Since" to "garbage"),
+                    "If-Unmodified-Since older" to ("If-Unmodified-Since" to "Fri, 01 Jan 2021 00:00:00 GMT"),
+                    "If-Unmodified-Since equal" to ("If-Unmodified-Since" to cssModified),
+                    "If-None-Match" to ("If-None-Match" to "\"x\""),
+                )) {
+                    add(Case("GET $css, $name", "GET", css, headers = mapOf(value)))
+                }
+                add(
+                    Case(
+                        "GET /swagger-ui/index.css, If-Range older",
+                        "GET",
+                        "/swagger-ui/index.css",
+                        headers =
+                            mapOf("If-Range" to "Fri, 01 Jan 2021 00:00:00 GMT", "Range" to "bytes=0-4"),
+                    ),
+                )
+                for (range in listOf(
+                    "bytes=",
+                    "bytes=,",
+                    "bytes=0-1,",
+                    "bytes=0-150,0-150",
+                    "bytes=0-100,101-201",
+                    "bytes=" + List(101) { "0-1" }.joinToString(","),
+                )) {
+                    add(ranged("GET /swagger-ui/index.css, Range '${range.take(40)}'", "GET", "index.css", range))
+                }
+                for (path in listOf(
+                    "/swagger-ui/index.html/",
+                    "/swagger-ui/swagger-ui.css/",
+                    "/swagger-ui/./index.html",
+                    "/swagger-ui//index.html",
+                    "/swagger-ui//",
+                )) {
+                    add(Case("GET $path", "GET", path))
+                }
+                add(Case("HEAD /swagger-ui/swagger-ui-bundle.js.LICENSE.txt", "HEAD", "/swagger-ui/swagger-ui-bundle.js.LICENSE.txt"))
                 // Accepted differences 2-4 (docs/MIGRATION-LOG.md): recorded so the overlay names what Kotlin does instead.
                 for (type in listOf("*/*", "application/*", "application/*+json")) {
                     add(

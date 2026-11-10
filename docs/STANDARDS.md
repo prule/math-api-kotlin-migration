@@ -7,7 +7,8 @@ code, not from that document.
 
 ## 1. Stack
 
-- Kotlin (JVM toolchain 25), Ktor (Netty), Jackson 2 (`com.fasterxml`) 2.22.2, pinned to the version `ktor-serialization-jackson` 3.6.1 uses, for JSON, Gradle Kotlin DSL with the wrapper.
+- Kotlin (JVM toolchain 25), Ktor (Netty), Jackson 2 (`com.fasterxml`) 2.22.2, pinned to the version `ktor-serialization-jackson` 3.6.1 uses, for JSON and
+  (with `jackson-dataformat-yaml`) the OpenAPI YAML; the `org.webjars:swagger-ui` webjar for the Swagger UI, Gradle Kotlin DSL with the wrapper.
 - `./gradlew build` is the gate: compile, tests, ArchUnit, and `spotlessCheck` (ktlint).
 - CI runs `./gradlew build` on every pull request and every push to `main`.
 
@@ -49,7 +50,9 @@ Evidence: `test/java/com/paulrule/mathapi/architecture/ArchitectureTest.java:11-
   message.
 - Every HTTP error is RFC 9457 Problem Details (`application/problem+json`) with `type`, `title`, `status`,
   `detail` and `instance`. Domain errors use `type = /problems/<slug>`. Framework errors and the catch-all use
-  `about:blank`.
+  `about:blank`. The exceptions copy Java exactly and each is a spec requirement: the actuator's empty 404 for
+  an unknown group, bodiless responses when `Accept` can't be parsed, and Swagger UI's 416 (Spring Boot's error
+  JSON).
 - No error `detail` contains a class or package name, a parser message, or the word `Exception`. An unexpected
   failure is logged and answered with a fixed message.
 
