@@ -7,7 +7,7 @@
 
 ## 2. CI
 
-- [ ] 2.1 Extend `.github/workflows/build.yml`: start Kotlin, wait for health, run `contractTest`, and upload the
+- [x] 2.1 Extend `.github/workflows/build.yml`: start Kotlin, wait for health, run `contractTest`, and upload the
   report on failure. Verify that the PR's `build` check runs the suite and passes.
 
 ## 3. Proof and docs
