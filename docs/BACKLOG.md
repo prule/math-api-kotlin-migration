@@ -6,7 +6,8 @@ In progress when you start an item and Done when you archive it.
 **Milestones:**
 - **v1 (migration):** items 1–6. Done when the Kotlin service is proven equal to the Java one. **Complete
   (2026-11-11):** see `docs/MIGRATION-LOG.md` → Equivalence.
-- **v2 (new behaviour):** item 7 onwards.
+- **v2 (new behaviour):** item 7 onwards. **Work order: 9, 10, 7, 8.** Items 9 and 10 came out of the v2 audit gate
+  (2026-11-11; see Gate results below), and they are numbered after 8 so no existing reference changes.
 
 Gate before item 1: audit the Java repo (see `CLAUDE.md` → Milestone gates).
 
@@ -20,6 +21,8 @@ Gate before item 1: audit the Java repo (see `CLAUDE.md` → Milestone gates).
 | 6 | `prove-equivalence` | (none: verification) | Done |
 | 7 | `add-calculation-history` | `calculation-history` | Not started |
 | 8 | `compare-recovered-specs` | (none: exercise write-up) | Not started |
+| 9 | `fix-audit-findings` | (none: speed and tests) | Not started |
+| 10 | `fix-source-defects` | `calculation` | Not started |
 
 ---
 
@@ -129,3 +132,53 @@ intentional changes.
 
 **Done when:** `docs/SPEC-COMPARISON.md` exists. This item does not need the code reviews; run the plan review
 and the retrospective only.
+
+## 9. `fix-audit-findings`
+
+From the v2 audit gate (Gate results below). Do this before item 7.
+
+**Prompt:**
+> Fix the three v2 audit findings:
+> 1. Cache each Swagger UI webjar file's bytes and modification time the first time it is read
+>    (`SwaggerUiRoutes.kt`). Today every request reads the whole file from the jar on the request thread, 1.5 MB
+>    for the bundle, even for a 10-byte `Range`.
+> 2. Add a unit test for `CloseWhenIdle` (`Application.kt`) with Netty's `EmbeddedChannel`: an `IdleStateEvent`
+>    closes the channel.
+> 3. Make `CalculationRoutesTest`, `HealthRoutesTest` and `ApiDocsRoutesTest` share one `testApplication` per
+>    class instead of starting one per request.
+>
+> No wire behaviour changes. `skip_specs: true`. The whole contract suite must stay green against both services.
+
+**Done when:** `./gradlew build` is faster, the new test fails if `CloseWhenIdle` is removed, and the contract
+suite is green against both services.
+
+## 10. `fix-source-defects`
+
+From the v2 audit gate (user decision, 2026-11-11). Do this after item 9 and before item 7.
+
+**Prompt:**
+> Fix MIGRATION-LOG Source defects 1-3 in the Kotlin service:
+> 1. The invalid-request detail says "at most 16,384 bytes" (the limit counts bytes) instead of "characters".
+> 2. A non-string `operation` (number, boolean) is invalid-request, not unknown-operation.
+> 3. Duplicate JSON keys are invalid-request (Jackson strict duplicate detection).
+>
+> Each change makes Kotlin differ from Java on purpose. Record them as Accepted difference 6 (agreed by the user in
+> the v2 audit gate), add the overlay entries for every golden case that changes, branch the affected contract
+> tests on `isJavaReference`, and modify the `calculation` spec's requirements ("Request size limits", "Body limit
+> counts bytes", "Non-string operation is coerced", "Lenient object fields"). Update the API docs example for
+> invalid-request; it is built from the same code, so it follows.
+
+**Done when:** the contract suite is green against both services with the new overlay entries, and
+MIGRATION-LOG lists defects 1-3 as fixed in Kotlin (difference 6).
+
+## Gate results
+
+**v2 audit gate** (`/ponytail:ponytail-audit`, 2026-11-11; verdict: healthy):
+- Finding 1, Swagger UI reads whole files from the jar on every request → item 9.
+- Finding 2, no automated test for the idle-connection close → item 9.
+- Finding 3, the web tests start one application per request → item 9.
+- Source defects 1-3 → item 10, by user decision. Defects 4 and 5 are already avoided in Kotlin (Accepted
+  difference 2).
+- Kept on purpose, not acted on: `PerformCalculation` and `UseCaseConfig` only pass calls through. They are kept
+  for the clean architecture.
+
