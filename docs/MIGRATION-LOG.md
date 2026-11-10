@@ -96,7 +96,8 @@ user decision in item 3.
 ## Source defects
 
 Bugs in the Java code, found by `/ponytail:ponytail-audit` (2026-11-10, gate before item 1) and confirmed with curl
-against the running service. Defects 1-3 **are ported faithfully** and pinned in
+against the running service. Defects 1-3 are scheduled to be fixed in Kotlin by backlog item 10 (user decision at the v2 audit gate). Until
+then they **are ported faithfully** and pinned in
 `src/contractTest/.../FrameworkDefaultsContractTest.kt`. Fix them only after the migration, each as a new backlog item.
 
 1. **The size limit counts bytes, but the error says characters** (Java `src/main/resources/application.yaml:10`,
