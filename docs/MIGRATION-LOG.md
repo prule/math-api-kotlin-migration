@@ -5,24 +5,25 @@ that seed them are in `MIGRATION-PLAN.md` §2.
 
 ## Unknowns
 
-Behaviour the Java code doesn't settle. Each takes a platform default in the Java service. Item 6 records the
-Kotlin default next to each one.
+Behaviour the Java code doesn't settle. Each takes a platform default in the Java service. Item 6 (2026-11-11)
+probed both services for each row, and "Matched" means they behave the same.
 
-| Topic | Java service (observed or default) | Kotlin service |
-|---|---|---|
-| Authentication / authorisation | None: every endpoint is open | (item 6) |
-| Rate limiting | None | (item 6) |
-| CORS | No CORS headers sent (pinned as RB-26) | (item 6) |
-| Response compression | None, even with `Accept-Encoding: gzip` (pinned as RB-26) | (item 6) |
-| Logging format | Spring Boot console default, INFO level | logback pattern in `logback.xml`, INFO (item 1) |
-| TLS | None. Plain HTTP; TLS is expected to end in front of the service | (item 6) |
-| Timeouts (request, idle) | Tomcat defaults | (item 6) |
-| HTTP/2 | Not enabled (Tomcat default) | (item 6) |
-| Graceful shutdown | Spring Boot default (graceful) | (item 6) |
-| Health when degraded | Never observed: no health contributors, so always `UP` | Always `UP` (item 4) |
-| Readiness during shutdown | Spring Boot reports `OUT_OF_SERVICE` while shutting down gracefully (framework default, not probed) | Always `UP` until the process stops (item 4) |
-| Swagger UI `Last-Modified` | The webjar entry's time, read in the JVM's time zone | The same, read the same way; equal on one machine, may differ by a zone offset if the two run in different zones (item 5) |
-| The 500 handler (RB-13) | Not reachable over HTTP; the Java test calls it directly | Unit test in item 3 |
+| Topic | Java service (observed or default) | Kotlin service | |
+|---|---|---|---|
+| Authentication / authorisation | None: every endpoint is open | None | Matched |
+| Rate limiting | None | None | Matched |
+| CORS | No CORS headers sent (pinned as RB-26) | None sent (pinned) | Matched |
+| Response compression | None, even with `Accept-Encoding: gzip` (RB-26) | None (pinned) | Matched |
+| Logging format | Spring Boot console default, INFO | logback pattern in `logback.xml`, INFO (item 1) | Level matched; line format differs (operational, not on the wire) |
+| TLS | None. Plain HTTP; TLS is expected to end in front of the service | None | Matched |
+| Idle and keep-alive connections | Closed after 60 s of no traffic (Tomcat connection timeout) | Closed after 60 s (Netty `IdleStateHandler`, item 6); writes time out after 60 s | Matched (probed) |
+| HTTP/2 | Not offered (no h2c, no prior knowledge) | Not offered | Matched (probed) |
+| `Server` header | None | None | Matched (probed) |
+| Graceful shutdown | Spring Boot default: graceful, up to 30 s per phase (not probed) | Ktor stop with a 30 s timeout (item 6; not probed) | Configured to match; not verified under load |
+| Health when degraded | Never observed: no health contributors, so always `UP` | Always `UP` (item 4) | Matched |
+| Readiness during shutdown | Spring Boot reports `OUT_OF_SERVICE` while shutting down gracefully (framework default, not probed) | Always `UP` until the process stops (item 4) | Unknown: not probed in Java |
+| Swagger UI `Last-Modified` | The webjar **file's** modification time (when it was downloaded or deployed) | The same | Matched; the value differs per install, so the golden file records `{last-modified}` (item 6) |
+| The 500 handler (RB-13) | Not reachable over HTTP; the Java test calls it directly | Unit test in item 3 | Matched by test |
 
 ## Accepted differences
 
@@ -83,6 +84,10 @@ Each place the Kotlin service behaves differently from Java, agreed with the use
    path's own `Allow`), or as the generic 404 where the path is unknown. Overlay cases: `CORS preflight`,
    `TRACE calculations`, `TRACE /actuator/health`, `TRACE /actuator/env` and `TRACE /actuator/` (item 4).
 
+5. **The status line has a reason phrase** (user decision, item 6, 2026-11-11). Tomcat writes `HTTP/1.1 200 ` with
+   no reason phrase; Ktor writes `HTTP/1.1 200 OK`. HTTP/1.1 tells clients to ignore the reason phrase, and the
+   golden file can't see it (the JDK client doesn't expose it). No overlay case.
+
 The overlay holds 37 cases in all: 19 for difference 1, 6 for difference 2, 7 for difference 3, and 5 for difference 4.
 
 **Decided to copy (not a difference):** Spring's framework error wording for 404/405/406/415 (RB-30). This was a
@@ -121,3 +126,34 @@ against the running service. Defects 1-3 **are ported faithfully** and pinned in
 
 The audit's verdict was healthy: nothing breaks at the expected load. `PerformCalculation` only passes the call
 through, but it is kept on purpose, because the clean architecture is a goal of the migration.
+
+## Equivalence (item 6, 2026-11-11)
+
+**Claim:** apart from the five accepted differences above, the Kotlin service answers every request the contract
+suite knows exactly as the Java service does, and CI checks this on every change.
+
+**Evidence:**
+- **537 contract tests pass against both services:**
+  - 52 calculation tests ported from the Java `CalculationControllerTest`;
+  - 29 health tests (ported from `ServiceHealthSmokeTest`, plus probed behaviour);
+  - 13 docs tests ported from `ApiDocumentationTest`;
+  - 68 tests of framework defaults found by probing;
+  - **375 golden cases** whose status, key headers and body were recorded from the Java service.
+- The golden recordings are pure Java. The 37 overlay cases name exactly what Kotlin does instead, each one tied
+  to an accepted difference.
+- Every RB row (RB-1 to RB-30) is pinned by a tagged contract test or a golden case, except RB-13, which is
+  covered by a unit test.
+- Three recovered specs: `calculation` (28 requirements), `service-health` (9) and `api-documentation` (16).
+  Every requirement cites Java code, a Java test, or a recorded Java response.
+- Connection behaviour (idle timeout, HTTP/2, `Server` header) was probed on both services. See Unknowns.
+- CI (`build` check) starts the Kotlin service and runs the whole suite on every PR and every push to `main`.
+
+**Limits of the proof:**
+- **Only what was asked is compared.** Behaviour no test or probe reached is unknown, not proven.
+- **No load, soak or concurrency testing:** both services are stateless, but throughput and latency were never
+  compared.
+- **Graceful shutdown and readiness during shutdown** are configured, not observed.
+- **HTTP/2 and TLS** are absent on both sides, so they were not compared further.
+- The proof covers the Java service as recorded on 2026-11-10/11. If the Java service changes, the golden file must
+  be re-recorded from it (`-Precord`, which refuses any other service).
+

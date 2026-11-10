@@ -20,3 +20,20 @@ jobs:
       # Caches Gradle and validates the committed wrapper jar.
       - uses: gradle/actions/setup-gradle@v5
       - run: ./gradlew build
+      # Equivalence: the contract suite against a fresh Kotlin service. The golden recordings carry the Java truth.
+      - name: Start the Kotlin service
+        run: |
+          PORT=8081 ./gradlew run > service.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null localhost:8081/actuator/health && exit 0; sleep 1; done
+          cat service.log
+          exit 1
+      - id: contract
+        run: BASE_URL=http://localhost:8081 ./gradlew contractTest
+      - if: failure() && steps.contract.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-report
+          path: |
+            build/reports/tests/contractTest
+            build/golden-actual.json
+            service.log

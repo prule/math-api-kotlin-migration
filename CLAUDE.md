@@ -43,6 +43,9 @@ The contract suite runs against both services over HTTP:
   `src/contractTest/resources/golden/responses.json` from Java. It refuses any other service. Re-record only
   when the corpus changes, and review the golden diff like code.
 
+CI runs the contract suite against the Kotlin service on every PR (the `build` check). A golden case or contract
+test that fails there is a broken equivalence, not a flaky test: fix Kotlin, or agree an accepted difference.
+
 Never edit the Java repo.
 
 ## Keep the docs current
