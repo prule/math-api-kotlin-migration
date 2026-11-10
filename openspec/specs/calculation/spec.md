@@ -249,9 +249,9 @@ Evidence: golden `latin-1 body`; contract test `FrameworkDefaultsContractTest.a 
 - **THEN** the response is 400 `unknown-operation` naming `é`
 
 ### Requirement: Response content type
-`Accept` types SHALL be ordered by specificity, and the first compatible with `application/json` or `application/*+json` SHALL be echoed with its parameters. `*/*`, `application/*` or no `Accept` SHALL give `application/json`. A `q` of 0 SHALL NOT exclude a type. Errors SHALL ignore a parseable `Accept`.
+`Accept` types SHALL be ordered by quality, then by specificity, then as written, and the first compatible with `application/json` or `application/*+json` SHALL be echoed with its parameters. `*/*`, `application/*` or no `Accept` SHALL give `application/json`. A `q` of 0 SHALL NOT exclude a type. Errors SHALL ignore a parseable `Accept`.
 
-Evidence: golden `accept problem+json, error` and the `Accept` cases recorded in this change.
+Evidence: golden `accept problem+json, error`, the `accept '…'` cases, and `accept '*/*;q=0.9, application/vnd.a+json;q=0.1'` (quality first, item 4).
 
 #### Scenario: Vendor type echoed
 - **WHEN** `Accept` is `application/vnd.a+json, application/json`
@@ -260,6 +260,14 @@ Evidence: golden `accept problem+json, error` and the `Accept` cases recorded in
 #### Scenario: Specific before wildcard
 - **WHEN** `Accept` is `application/*;q=1, application/vnd.c+json`
 - **THEN** the response content type is `application/vnd.c+json`
+
+#### Scenario: Quality before order
+- **WHEN** `Accept` is `application/json;q=0.5, application/vnd.a+json`
+- **THEN** the response content type is `application/vnd.a+json`
+
+#### Scenario: Quality before specificity
+- **WHEN** `Accept` is `*/*;q=0.9, application/vnd.a+json;q=0.1`
+- **THEN** the response content type is `application/json`
 
 #### Scenario: Errors ignore Accept
 - **WHEN** `Accept` is `text/plain` and `operation` is unknown

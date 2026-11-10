@@ -19,6 +19,8 @@ Kotlin default next to each one.
 | Timeouts (request, idle) | Tomcat defaults | (item 6) |
 | HTTP/2 | Not enabled (Tomcat default) | (item 6) |
 | Graceful shutdown | Spring Boot default (graceful) | (item 6) |
+| Health when degraded | Never observed: no health contributors, so always `UP` | Always `UP` (item 4) |
+| Readiness during shutdown | Spring Boot reports `OUT_OF_SERVICE` while shutting down gracefully (framework default, not probed) | Always `UP` until the process stops (item 4) |
 | The 500 handler (RB-13) | Not reachable over HTTP; the Java test calls it directly | Unit test in item 3 |
 
 ## Accepted differences
@@ -49,19 +51,38 @@ Each place the Kotlin service behaves differently from Java, agreed with the use
    Java answers `*/*`, `application/*` and `application/*+json` with a 500 "could not be completed" (source defect
    4). Kotlin answers 415 with the usual detail, for example `Content-Type '*/*;charset=UTF-8' is not supported.`
    Overlay cases: `content type '*/*'`, `content type 'application/*'`, `content type 'application/*+json'`.
+   Extended in item 4 (user decision): an `Accept` with empty entries (`,,,`, `application/json,`,
+   `, application/json`) gets 500 from Java on actuator paths (source defect 5). Kotlin skips the empty entries,
+   as Java itself does on the calculations endpoint. Overlay cases: `actuator accept ',,,'`,
+   `actuator accept 'application/json,'`, `actuator accept ', application/json'`.
 3. **Tomcat path normalisation is not copied** (user decision, item 3 code review). Java (Tomcat) treats
    `//api/v1/calculations` as unknown (404), and strips path parameters, so `/api/v1/calculations;jsessionid=1`
    is the endpoint (200). Ktor collapses the double slash (200) and keeps the path parameter (404). Overlay cases:
-   `double slash`, `path parameter`.
+   `double slash`, `path parameter`, and `GET /actuator//health` (item 4).
+
+   Extended in item 4 (user decision):
+   - actuator path parameters (`/actuator/health;x=1`: Java 200, Kotlin 404);
+   - an encoded slash (`/actuator/health/liveness%2F`: Tomcat's HTML 400, Kotlin 404);
+   - an invalid `Host` (`a/b`: Tomcat's HTML 400; Kotlin answers and puts it in the links).
+
+   Overlay cases: `GET /actuator/health;x=1`, `GET /actuator/health/;x=1`, `GET /actuator/health/liveness%2F`,
+   `actuator index Host 'a/b'`.
+
+   Not in the golden file, because the JDK client always sends `Host`:
+   - Tomcat answers an HTTP/1.1 request with no `Host` with its HTML 400 page;
+   - for HTTP/1.0 without `Host`, both services name themselves by reverse DNS of the local address. That gave
+     `localhost` in Java's probe and `ip6-localhost` over IPv6 loopback in Kotlin's, so it depends on the
+     environment, not on the code.
 4. **OPTIONS and TRACE extras are not copied** (user decision, item 3 code review):
    - Java's `OPTIONS` also sends an empty `Accept-Patch:` header (not recorded in the golden file);
    - a CORS preflight (`Origin` plus `Access-Control-Request-Method`) gets `Allow: GET, HEAD, POST, PUT, DELETE, OPTIONS, PATCH`;
    - `TRACE` gets Spring Boot's own error JSON with a six-method `Allow`.
 
-   Kotlin answers these like any other `OPTIONS`, or like any other unsupported method (405 problem,
-   `Allow: POST`). Overlay cases: `CORS preflight`, `TRACE calculations`.
+   Kotlin answers these like any other `OPTIONS`, or like any other unsupported method (405 problem, with the
+   path's own `Allow`), or as the generic 404 where the path is unknown. Overlay cases: `CORS preflight`,
+   `TRACE calculations`, `TRACE /actuator/health`, `TRACE /actuator/env` and `TRACE /actuator/` (item 4).
 
-The overlay holds 26 cases in all: 19 for difference 1, 3 for difference 2, 2 for difference 3, and 2 for difference 4.
+The overlay holds 37 cases in all: 19 for difference 1, 6 for difference 2, 7 for difference 3, and 5 for difference 4.
 
 **Decided to copy (not a difference):** Spring's framework error wording for 404/405/406/415 (RB-30). This was a
 user decision in item 3.
@@ -91,6 +112,11 @@ against the running service. Defects 1-3 **are ported faithfully** and pinned in
      inside the converter rather than as 415.
    - Kotlin does **not** port this. It answers 415 (Accepted difference 2).
    - Fix later on the Java side only, if Java lives on.
+
+5. **An `Accept` with empty entries gets 500 on actuator paths** (found in item 4's code review)
+   - `Accept: ,,,` or `application/json,` reaches the catch-all on `/actuator/health` and its groups. The
+     calculations endpoint skips empty entries instead.
+   - Kotlin does not port this. It skips the empty entries everywhere (Accepted difference 2).
 
 The audit's verdict was healthy: nothing breaks at the expected load. `PerformCalculation` only passes the call
 through, but it is kept on purpose, because the clean architecture is a goal of the migration.

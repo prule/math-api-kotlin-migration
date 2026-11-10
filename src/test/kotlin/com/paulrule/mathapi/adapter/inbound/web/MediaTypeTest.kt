@@ -14,6 +14,9 @@ class MediaTypeTest {
         value = [
             "application/vnd.a+json, application/json         | application/vnd.a+json",
             "application/*;q=1, application/vnd.c+json        | application/vnd.c+json",
+            "application/json;q=0.5, application/vnd.a+json   | application/vnd.a+json",
+            "application/json, application/vnd.a+json         | application/json",
+            "*/*;q=0.9, application/vnd.a+json;q=0.1          | application/json",
             "application/json;charset=utf-8                   | application/json;charset=utf-8",
             "APPLICATION/JSON;Charset=UTF-8                   | application/json;charset=UTF-8",
             "application/json;foo                             | application/json",

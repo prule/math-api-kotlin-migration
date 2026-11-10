@@ -5,8 +5,6 @@ import com.fasterxml.jackson.core.JsonEncoding
 import com.paulrule.mathapi.application.PerformCalculation
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.content.OutgoingContent
-import io.ktor.http.headersOf
 import io.ktor.server.request.header
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.receiveStream
@@ -51,28 +49,8 @@ fun Route.calculationRoutes(performCalculation: PerformCalculation) {
             call.response.header(HttpHeaders.Allow, "POST,OPTIONS")
             call.respond(HttpStatusCode.OK)
         }
-        handle {
-            throw frameworkProblem(
-                HttpStatusCode.MethodNotAllowed,
-                "Method '${call.request.httpMethod.value}' is not supported.",
-                mapOf(HttpHeaders.Allow to "POST"),
-            )
-        }
+        handle { throw methodNotAllowed(call, allow = "POST") }
     }
-}
-
-/**
- * Bytes with the Content-Type written exactly as Spring does (`application/json;charset=utf-8`, no space); Ktor's
- * ContentType would render `application/json; charset=utf-8` (RB-27).
- */
-private class SpringFormattedBytes(
-    private val bytes: ByteArray,
-    contentType: String,
-) : OutgoingContent.ByteArrayContent() {
-    override val contentLength get() = bytes.size.toLong()
-    override val headers = headersOf(HttpHeaders.ContentType, contentType)
-
-    override fun bytes() = bytes
 }
 
 /**

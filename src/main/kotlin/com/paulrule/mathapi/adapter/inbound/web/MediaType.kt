@@ -22,6 +22,17 @@ internal data class MediaType(
     /** The declared charset, if any (validated when parsed). */
     val charset: String? get() = parameter("charset")
 
+    // Concrete, then `x/*` or `x/*+json`, then any type.
+    private val specificityRank get() =
+        if (isWildcardType) {
+            2
+        } else if (isWildcardSubtype) {
+            1
+        } else {
+            0
+        }
+    private val quality get() = parameter("q")?.toDouble() ?: 1.0
+
     fun withoutQuality() = copy(parameters = parameters.filterNot { it.first == "q" })
 
     fun isCompatibleWith(other: MediaType): Boolean {
@@ -111,29 +122,23 @@ internal data class MediaType(
         }
 
         /**
-         * Spring's choice of the response type: the most specific compatible pairs, in Accept order, concrete types
-         * first; a remaining wildcard (any type, or any application subtype) means JSON. Null when nothing is compatible.
+         * Spring's choice of the response type: Accept types ordered by quality, then specificity, then as written;
+         * the most specific compatible pair of each; the first concrete one wins, else the first producible type.
+         * Null when nothing is compatible.
          */
-        fun select(accepted: List<MediaType>): MediaType? {
-            // Spring orders the Accept types by specificity first: concrete, then `x/*` or `x/*+json`, then any type.
-            val bySpecificity =
-                accepted.sortedBy {
-                    if (it.isWildcardType) {
-                        2
-                    } else if (it.isWildcardSubtype) {
-                        1
-                    } else {
-                        0
-                    }
-                }
+        fun select(
+            accepted: List<MediaType>,
+            producible: List<MediaType> = PRODUCIBLE,
+        ): MediaType? {
+            val ordered = accepted.sortedWith(compareByDescending<MediaType> { it.quality }.thenBy { it.specificityRank })
             val compatible =
-                bySpecificity.flatMap { accept ->
-                    PRODUCIBLE.filter { accept.isCompatibleWith(it) }.map { produce ->
+                ordered.flatMap { accept ->
+                    producible.filter { accept.isCompatibleWith(it) }.map { produce ->
                         if (accept.isLessSpecific(produce)) produce else accept
                     }
                 }
             if (compatible.isEmpty()) return null
-            return (compatible.firstOrNull { it.isConcrete } ?: JSON).withoutQuality()
+            return (compatible.firstOrNull { it.isConcrete } ?: producible.first()).withoutQuality()
         }
 
         /** A concrete JSON or `*+json` type. A wildcard request type is 415: MIGRATION-LOG Accepted difference 2. */
