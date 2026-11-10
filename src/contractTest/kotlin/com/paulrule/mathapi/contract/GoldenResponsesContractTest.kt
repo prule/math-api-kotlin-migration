@@ -252,6 +252,96 @@ class GoldenResponsesContractTest {
                         Charsets.ISO_8859_1,
                     ),
                 )
+                // Item 4: the actuator, probed on the Java service.
+                for (path in listOf(
+                    "/actuator/",
+                    "/actuator/health/liveness/",
+                    "/actuator/health/liveness/x",
+                    "/actuator/health/LIVENESS",
+                    "/ACTUATOR/HEALTH",
+                    "/actuator/health?x=1",
+                    "/actuator/health.json",
+                )) {
+                    add(Case("GET $path", "GET", path))
+                }
+                for (accept in listOf(
+                    "application/json",
+                    "application/vnd.spring-boot.actuator.v3+json",
+                    "application/vnd.spring-boot.actuator.v2+json",
+                    "text/plain",
+                    "garbage",
+                    "*/*",
+                    "application/*",
+                    "application/vnd.foo+json",
+                    "application/yaml",
+                    "application/json;q=0.5, application/vnd.spring-boot.actuator.v2+json",
+                    "application/json, application/vnd.spring-boot.actuator.v2+json",
+                    "application/json;charset=utf-8",
+                )) {
+                    add(Case("actuator accept '$accept'", "GET", "/actuator/health", headers = mapOf("Accept" to accept)))
+                }
+                for (path in listOf("/actuator", "/actuator/health", "/actuator/health/liveness", "/actuator/health/nope")) {
+                    for (method in listOf("HEAD", "POST", "PUT", "DELETE", "OPTIONS")) add(Case("$method $path", method, path))
+                }
+                add(Case("actuator index accept json", "GET", "/actuator", headers = mapOf("Accept" to "application/json")))
+                add(Case("actuator index accept text/plain", "GET", "/actuator", headers = mapOf("Accept" to "text/plain")))
+                add(
+                    Case(
+                        "actuator liveness accept json",
+                        "GET",
+                        "/actuator/health/liveness",
+                        headers = mapOf("Accept" to "application/json"),
+                    ),
+                )
+                add(
+                    Case(
+                        "actuator unknown group accept text/plain",
+                        "GET",
+                        "/actuator/health/nope",
+                        headers =
+                            mapOf("Accept" to "text/plain"),
+                    ),
+                )
+                add(Case("actuator unknown group accept garbage", "GET", "/actuator/health/nope", headers = mapOf("Accept" to "garbage")))
+                add(Case("actuator POST accept garbage", "POST", "/actuator/health", headers = mapOf("Accept" to "garbage")))
+                add(Case("actuator index Host header", "GET", "/actuator", headers = mapOf("Host" to "example.org:9999")))
+                add(
+                    Case(
+                        "actuator index X-Forwarded headers",
+                        "GET",
+                        "/actuator",
+                        headers = mapOf("X-Forwarded-Host" to "proxy.example", "X-Forwarded-Proto" to "https"),
+                    ),
+                )
+                add(Case("GET /actuator//health", "GET", "/actuator//health"))
+                add(Case("TRACE /actuator/health", "TRACE", "/actuator/health"))
+                // Item 4's code review: quality before specificity (fixed), Host port normalisation (fixed).
+                for (accept in listOf(
+                    "application/json;q=0.5, */*",
+                    "application/json;q=0.8, application/*+json;q=0.9",
+                    "application/vnd.spring-boot.actuator.v2+json;q=0.3, application/*;q=0.8",
+                )) {
+                    add(Case("actuator accept '$accept'", "GET", "/actuator/health", headers = mapOf("Accept" to accept)))
+                }
+                for (accept in listOf("*/*;q=0.9, application/vnd.a+json;q=0.1", "application/*;q=0.9, application/vnd.a+json;q=0.1")) {
+                    add(calc("accept '$accept'", ok, JSON + ("Accept" to accept)))
+                }
+                for (host in listOf("example.org:80", "example.org:0080", "example.org:", "[::1]:9090")) {
+                    add(Case("actuator index Host '$host'", "GET", "/actuator", headers = mapOf("Host" to host)))
+                }
+                // Item 4's code review: accepted differences 2-4 extended (user decision).
+                for (accept in listOf(",,,", "application/json,", ", application/json")) {
+                    add(Case("actuator accept '$accept'", "GET", "/actuator/health", headers = mapOf("Accept" to accept)))
+                }
+                for (path in listOf(
+                    "/actuator/health;x=1",
+                    "/actuator/health/;x=1",
+                    "/actuator/health/liveness%2F",
+                )) {
+                    add(Case("GET $path", "GET", path))
+                }
+                add(Case("actuator index Host 'a/b'", "GET", "/actuator", headers = mapOf("Host" to "a/b")))
+                for (path in listOf("/actuator/env", "/actuator/")) add(Case("TRACE $path", "TRACE", path))
                 // Accepted differences 2-4 (docs/MIGRATION-LOG.md): recorded so the overlay names what Kotlin does instead.
                 for (type in listOf("*/*", "application/*", "application/*+json")) {
                     add(

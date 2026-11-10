@@ -293,5 +293,122 @@
       "detail": "Method 'TRACE' is not supported.",
       "instance": "/api/v1/calculations"
     }
+  },
+  "GET /actuator//health": {
+    "status": 200,
+    "Content-Type": "application/vnd.spring-boot.actuator.v3+json",
+    "body": {
+      "groups": [
+        "liveness",
+        "readiness"
+      ],
+      "status": "UP"
+    }
+  },
+  "TRACE /actuator/health": {
+    "status": 405,
+    "Content-Type": "application/problem+json",
+    "Allow": "GET",
+    "body": {
+      "type": "about:blank",
+      "title": "Method Not Allowed",
+      "status": 405,
+      "detail": "Method 'TRACE' is not supported.",
+      "instance": "/actuator/health"
+    }
+  },
+  "actuator accept ',,,'": {
+    "status": 200,
+    "Content-Type": "application/vnd.spring-boot.actuator.v3+json",
+    "body": {
+      "groups": [
+        "liveness",
+        "readiness"
+      ],
+      "status": "UP"
+    }
+  },
+  "actuator accept 'application/json,'": {
+    "status": 200,
+    "Content-Type": "application/json",
+    "body": {
+      "groups": [
+        "liveness",
+        "readiness"
+      ],
+      "status": "UP"
+    }
+  },
+  "actuator accept ', application/json'": {
+    "status": 200,
+    "Content-Type": "application/json",
+    "body": {
+      "groups": [
+        "liveness",
+        "readiness"
+      ],
+      "status": "UP"
+    }
+  },
+  "GET /actuator/health;x=1": {
+    "status": 404,
+    "Content-Type": "application/problem+json",
+    "body": {
+      "type": "about:blank",
+      "title": "Not Found",
+      "status": 404,
+      "detail": "No static resource actuator/health;x=1.",
+      "instance": "/actuator/health;x=1"
+    }
+  },
+  "GET /actuator/health/;x=1": {
+    "status": 404,
+    "body": ""
+  },
+  "GET /actuator/health/liveness%2F": {
+    "status": 404,
+    "body": ""
+  },
+  "actuator index Host 'a/b'": {
+    "status": 200,
+    "Content-Type": "application/vnd.spring-boot.actuator.v3+json",
+    "body": {
+      "_links": {
+        "self": {
+          "href": "http://a/b/actuator",
+          "templated": false
+        },
+        "health": {
+          "href": "http://a/b/actuator/health",
+          "templated": false
+        },
+        "health-path": {
+          "href": "http://a/b/actuator/health/{*path}",
+          "templated": true
+        }
+      }
+    }
+  },
+  "TRACE /actuator/env": {
+    "status": 404,
+    "Content-Type": "application/problem+json",
+    "body": {
+      "type": "about:blank",
+      "title": "Not Found",
+      "status": 404,
+      "detail": "No static resource actuator/env.",
+      "instance": "/actuator/env"
+    }
+  },
+  "TRACE /actuator/": {
+    "status": 404,
+    "Content-Type": "application/problem+json",
+    "body": {
+      "type": "about:blank",
+      "title": "Not Found",
+      "status": 404,
+      "detail": "No static resource actuator.",
+      "instance": "/actuator/"
+    }
   }
 }

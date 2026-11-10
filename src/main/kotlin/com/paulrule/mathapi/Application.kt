@@ -1,6 +1,7 @@
 package com.paulrule.mathapi
 
 import com.paulrule.mathapi.adapter.inbound.web.calculationRoutes
+import com.paulrule.mathapi.adapter.inbound.web.healthRoutes
 import com.paulrule.mathapi.adapter.inbound.web.problemDetails
 import com.paulrule.mathapi.config.UseCaseConfig
 import io.ktor.server.application.Application
@@ -22,5 +23,8 @@ fun main() {
 fun Application.module() {
     val useCases = UseCaseConfig()
     install(StatusPages) { problemDetails() }
-    routing { calculationRoutes(useCases.performCalculation) }
+    routing {
+        calculationRoutes(useCases.performCalculation)
+        healthRoutes()
+    }
 }

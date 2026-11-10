@@ -1570,27 +1570,6 @@
       "type" : "/problems/invalid-request"
     }
   },
-  "strict {\"operation\": 1.5, \"a\": 1, \"b\": 2}" : {
-    "status" : 400,
-    "Content-Type" : "application/problem+json",
-    "body" : {
-      "detail" : "Unknown operation '1.5'. Supported operations: ADD, SUBTRACT, MULTIPLY, DIVIDE.",
-      "instance" : "/api/v1/calculations",
-      "status" : 400,
-      "title" : "Unknown operation",
-      "type" : "/problems/unknown-operation"
-    }
-  },
-  "strict {\"operation\": \"ADD\", \"a\": \"1.\", \"b\": \".5\"}" : {
-    "status" : 200,
-    "Content-Type" : "application/json",
-    "body" : {
-      "operation" : "ADD",
-      "a" : "1",
-      "b" : "0.5",
-      "result" : "1.5"
-    }
-  },
   "strict {\"operation\": \"ADD\", \"a\": \"NaN\", \"b\": 2}" : {
     "status" : 400,
     "Content-Type" : "application/problem+json",
@@ -1622,6 +1601,27 @@
       "status" : 400,
       "title" : "Invalid request",
       "type" : "/problems/invalid-request"
+    }
+  },
+  "strict {\"operation\": 1.5, \"a\": 1, \"b\": 2}" : {
+    "status" : 400,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "Unknown operation '1.5'. Supported operations: ADD, SUBTRACT, MULTIPLY, DIVIDE.",
+      "instance" : "/api/v1/calculations",
+      "status" : 400,
+      "title" : "Unknown operation",
+      "type" : "/problems/unknown-operation"
+    }
+  },
+  "strict {\"operation\": \"ADD\", \"a\": \"1.\", \"b\": \".5\"}" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "0.5",
+      "result" : "1.5"
     }
   },
   "strict {\"operation\": \"ADD\", \"a\": \"١٢\", \"b\": 2}" : {
@@ -1827,6 +1827,678 @@
       "status" : 400,
       "title" : "Unknown operation",
       "type" : "/problems/unknown-operation"
+    }
+  },
+  "GET /actuator/" : {
+    "status" : 404,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "No static resource actuator.",
+      "instance" : "/actuator/",
+      "status" : 404,
+      "title" : "Not Found",
+      "type" : "about:blank"
+    }
+  },
+  "GET /actuator/health/liveness/" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "status" : "UP"
+    }
+  },
+  "GET /actuator/health/liveness/x" : {
+    "status" : 404,
+    "body" : ""
+  },
+  "GET /actuator/health/LIVENESS" : {
+    "status" : 404,
+    "body" : ""
+  },
+  "GET /ACTUATOR/HEALTH" : {
+    "status" : 404,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "No static resource ACTUATOR/HEALTH.",
+      "instance" : "/ACTUATOR/HEALTH",
+      "status" : 404,
+      "title" : "Not Found",
+      "type" : "about:blank"
+    }
+  },
+  "GET /actuator/health?x=1" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "GET /actuator/health.json" : {
+    "status" : 404,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "No static resource actuator/health.json.",
+      "instance" : "/actuator/health.json",
+      "status" : 404,
+      "title" : "Not Found",
+      "type" : "about:blank"
+    }
+  },
+  "actuator accept 'application/json'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "actuator accept 'application/vnd.spring-boot.actuator.v3+json'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "actuator accept 'application/vnd.spring-boot.actuator.v2+json'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v2+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "actuator accept 'text/plain'" : {
+    "status" : 406,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json",
+    "body" : {
+      "detail" : "Acceptable representations: [application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json].",
+      "instance" : "/actuator/health",
+      "status" : 406,
+      "title" : "Not Acceptable",
+      "type" : "about:blank"
+    }
+  },
+  "actuator accept 'garbage'" : {
+    "status" : 406,
+    "Accept" : "application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json",
+    "body" : ""
+  },
+  "actuator accept '*/*'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "actuator accept 'application/*'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "actuator accept 'application/vnd.foo+json'" : {
+    "status" : 406,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json",
+    "body" : {
+      "detail" : "Acceptable representations: [application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json].",
+      "instance" : "/actuator/health",
+      "status" : 406,
+      "title" : "Not Acceptable",
+      "type" : "about:blank"
+    }
+  },
+  "actuator accept 'application/yaml'" : {
+    "status" : 406,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json",
+    "body" : {
+      "detail" : "Acceptable representations: [application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json].",
+      "instance" : "/actuator/health",
+      "status" : 406,
+      "title" : "Not Acceptable",
+      "type" : "about:blank"
+    }
+  },
+  "actuator accept 'application/json;q=0.5, application/vnd.spring-boot.actuator.v2+json'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v2+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "actuator accept 'application/json, application/vnd.spring-boot.actuator.v2+json'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "actuator accept 'application/json;charset=utf-8'" : {
+    "status" : 200,
+    "Content-Type" : "application/json;charset=utf-8",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "HEAD /actuator" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : ""
+  },
+  "POST /actuator" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'POST' is not supported.",
+      "instance" : "/actuator",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "PUT /actuator" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'PUT' is not supported.",
+      "instance" : "/actuator",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "DELETE /actuator" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'DELETE' is not supported.",
+      "instance" : "/actuator",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "OPTIONS /actuator" : {
+    "status" : 200,
+    "Allow" : "GET,HEAD,OPTIONS",
+    "body" : ""
+  },
+  "HEAD /actuator/health" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : ""
+  },
+  "POST /actuator/health" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'POST' is not supported.",
+      "instance" : "/actuator/health",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "PUT /actuator/health" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'PUT' is not supported.",
+      "instance" : "/actuator/health",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "DELETE /actuator/health" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'DELETE' is not supported.",
+      "instance" : "/actuator/health",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "OPTIONS /actuator/health" : {
+    "status" : 200,
+    "Allow" : "GET,HEAD,OPTIONS",
+    "body" : ""
+  },
+  "HEAD /actuator/health/liveness" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : ""
+  },
+  "POST /actuator/health/liveness" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'POST' is not supported.",
+      "instance" : "/actuator/health/liveness",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "PUT /actuator/health/liveness" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'PUT' is not supported.",
+      "instance" : "/actuator/health/liveness",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "DELETE /actuator/health/liveness" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'DELETE' is not supported.",
+      "instance" : "/actuator/health/liveness",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "OPTIONS /actuator/health/liveness" : {
+    "status" : 200,
+    "Allow" : "GET,HEAD,OPTIONS",
+    "body" : ""
+  },
+  "HEAD /actuator/health/nope" : {
+    "status" : 404,
+    "body" : ""
+  },
+  "POST /actuator/health/nope" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'POST' is not supported.",
+      "instance" : "/actuator/health/nope",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "PUT /actuator/health/nope" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'PUT' is not supported.",
+      "instance" : "/actuator/health/nope",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "DELETE /actuator/health/nope" : {
+    "status" : 405,
+    "Content-Type" : "application/problem+json",
+    "Allow" : "GET",
+    "body" : {
+      "detail" : "Method 'DELETE' is not supported.",
+      "instance" : "/actuator/health/nope",
+      "status" : 405,
+      "title" : "Method Not Allowed",
+      "type" : "about:blank"
+    }
+  },
+  "OPTIONS /actuator/health/nope" : {
+    "status" : 200,
+    "Allow" : "GET,HEAD,OPTIONS",
+    "body" : ""
+  },
+  "actuator index accept json" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "_links" : {
+        "self" : {
+          "href" : "{base}/actuator",
+          "templated" : false
+        },
+        "health" : {
+          "href" : "{base}/actuator/health",
+          "templated" : false
+        },
+        "health-path" : {
+          "href" : "{base}/actuator/health/{*path}",
+          "templated" : true
+        }
+      }
+    }
+  },
+  "actuator index accept text/plain" : {
+    "status" : 406,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json",
+    "body" : {
+      "detail" : "Acceptable representations: [application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json].",
+      "instance" : "/actuator",
+      "status" : 406,
+      "title" : "Not Acceptable",
+      "type" : "about:blank"
+    }
+  },
+  "actuator liveness accept json" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "status" : "UP"
+    }
+  },
+  "actuator unknown group accept text/plain" : {
+    "status" : 406,
+    "Content-Type" : "application/problem+json",
+    "Accept" : "application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json",
+    "body" : {
+      "detail" : "Acceptable representations: [application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json].",
+      "instance" : "/actuator/health/nope",
+      "status" : 406,
+      "title" : "Not Acceptable",
+      "type" : "about:blank"
+    }
+  },
+  "actuator unknown group accept garbage" : {
+    "status" : 406,
+    "Accept" : "application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json",
+    "body" : ""
+  },
+  "actuator POST accept garbage" : {
+    "status" : 405,
+    "Allow" : "GET",
+    "body" : ""
+  },
+  "actuator index Host header" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "_links" : {
+        "self" : {
+          "href" : "http://example.org:9999/actuator",
+          "templated" : false
+        },
+        "health" : {
+          "href" : "http://example.org:9999/actuator/health",
+          "templated" : false
+        },
+        "health-path" : {
+          "href" : "http://example.org:9999/actuator/health/{*path}",
+          "templated" : true
+        }
+      }
+    }
+  },
+  "actuator index X-Forwarded headers" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "_links" : {
+        "self" : {
+          "href" : "{base}/actuator",
+          "templated" : false
+        },
+        "health" : {
+          "href" : "{base}/actuator/health",
+          "templated" : false
+        },
+        "health-path" : {
+          "href" : "{base}/actuator/health/{*path}",
+          "templated" : true
+        }
+      }
+    }
+  },
+  "GET /actuator//health" : {
+    "status" : 404,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "No static resource actuator/health.",
+      "instance" : "/actuator//health",
+      "status" : 404,
+      "title" : "Not Found",
+      "type" : "about:blank"
+    }
+  },
+  "TRACE /actuator/health" : {
+    "status" : 405,
+    "Content-Type" : "application/json",
+    "Allow" : "HEAD, DELETE, POST, GET, OPTIONS, PUT",
+    "body" : {
+      "timestamp" : "{timestamp}",
+      "status" : 405,
+      "error" : "Method Not Allowed",
+      "path" : "/actuator/health"
+    }
+  },
+  "actuator accept 'application/json;q=0.5, */*'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "actuator accept 'application/json;q=0.8, application/*+json;q=0.9'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "actuator accept 'application/vnd.spring-boot.actuator.v2+json;q=0.3, application/*;q=0.8'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "accept '*/*;q=0.9, application/vnd.a+json;q=0.1'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "accept 'application/*;q=0.9, application/vnd.a+json;q=0.1'" : {
+    "status" : 200,
+    "Content-Type" : "application/json",
+    "body" : {
+      "operation" : "ADD",
+      "a" : "1",
+      "b" : "2",
+      "result" : "3"
+    }
+  },
+  "actuator index Host 'example.org:80'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "_links" : {
+        "self" : {
+          "href" : "http://example.org/actuator",
+          "templated" : false
+        },
+        "health" : {
+          "href" : "http://example.org/actuator/health",
+          "templated" : false
+        },
+        "health-path" : {
+          "href" : "http://example.org/actuator/health/{*path}",
+          "templated" : true
+        }
+      }
+    }
+  },
+  "actuator index Host 'example.org:0080'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "_links" : {
+        "self" : {
+          "href" : "http://example.org/actuator",
+          "templated" : false
+        },
+        "health" : {
+          "href" : "http://example.org/actuator/health",
+          "templated" : false
+        },
+        "health-path" : {
+          "href" : "http://example.org/actuator/health/{*path}",
+          "templated" : true
+        }
+      }
+    }
+  },
+  "actuator index Host 'example.org:'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "_links" : {
+        "self" : {
+          "href" : "http://example.org:0/actuator",
+          "templated" : false
+        },
+        "health" : {
+          "href" : "http://example.org:0/actuator/health",
+          "templated" : false
+        },
+        "health-path" : {
+          "href" : "http://example.org:0/actuator/health/{*path}",
+          "templated" : true
+        }
+      }
+    }
+  },
+  "actuator index Host '[::1]:9090'" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "_links" : {
+        "self" : {
+          "href" : "http://[::1]:9090/actuator",
+          "templated" : false
+        },
+        "health" : {
+          "href" : "http://[::1]:9090/actuator/health",
+          "templated" : false
+        },
+        "health-path" : {
+          "href" : "http://[::1]:9090/actuator/health/{*path}",
+          "templated" : true
+        }
+      }
+    }
+  },
+  "actuator accept ',,,'" : {
+    "status" : 500,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The calculation could not be completed.",
+      "instance" : "/actuator/health",
+      "status" : 500,
+      "title" : "Internal Server Error",
+      "type" : "about:blank"
+    }
+  },
+  "actuator accept 'application/json,'" : {
+    "status" : 500,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The calculation could not be completed.",
+      "instance" : "/actuator/health",
+      "status" : 500,
+      "title" : "Internal Server Error",
+      "type" : "about:blank"
+    }
+  },
+  "actuator accept ', application/json'" : {
+    "status" : 500,
+    "Content-Type" : "application/problem+json",
+    "body" : {
+      "detail" : "The calculation could not be completed.",
+      "instance" : "/actuator/health",
+      "status" : 500,
+      "title" : "Internal Server Error",
+      "type" : "about:blank"
+    }
+  },
+  "GET /actuator/health;x=1" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "GET /actuator/health/;x=1" : {
+    "status" : 200,
+    "Content-Type" : "application/vnd.spring-boot.actuator.v3+json",
+    "body" : {
+      "groups" : [ "liveness", "readiness" ],
+      "status" : "UP"
+    }
+  },
+  "GET /actuator/health/liveness%2F" : {
+    "status" : 400,
+    "Content-Type" : "text/html;charset=utf-8",
+    "body" : "<!doctype html><html lang=\"en\"><head><title>HTTP Status 400 – Bad Request</title><style type=\"text/css\">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 – Bad Request</h1></body></html>"
+  },
+  "actuator index Host 'a/b'" : {
+    "status" : 400,
+    "Content-Type" : "text/html;charset=utf-8",
+    "body" : "<!doctype html><html lang=\"en\"><head><title>HTTP Status 400 – Bad Request</title><style type=\"text/css\">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 – Bad Request</h1></body></html>"
+  },
+  "TRACE /actuator/env" : {
+    "status" : 405,
+    "Content-Type" : "application/json",
+    "Allow" : "HEAD, DELETE, POST, GET, OPTIONS, PUT",
+    "body" : {
+      "timestamp" : "{timestamp}",
+      "status" : 405,
+      "error" : "Method Not Allowed",
+      "path" : "/actuator/env"
+    }
+  },
+  "TRACE /actuator/" : {
+    "status" : 405,
+    "Content-Type" : "application/json",
+    "Allow" : "HEAD, DELETE, POST, GET, OPTIONS, PUT",
+    "body" : {
+      "timestamp" : "{timestamp}",
+      "status" : 405,
+      "error" : "Method Not Allowed",
+      "path" : "/actuator/"
     }
   },
   "content type '*/*'" : {

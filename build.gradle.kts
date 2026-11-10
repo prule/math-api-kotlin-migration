@@ -64,6 +64,8 @@ testing {
                             .get()
                             .asFile.path,
                     )
+                    // The JDK client drops a custom Host header unless allowed; the actuator links are built from it.
+                    systemProperty("jdk.httpclient.allowRestrictedHeaders", "host")
                     outputs.upToDateWhen { false } // the service under test is outside Gradle's view
                 }
             }

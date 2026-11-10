@@ -5,7 +5,6 @@ import com.paulrule.mathapi.domain.OperandOutOfRangeException
 import com.paulrule.mathapi.domain.UnknownOperationException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.plugins.statuspages.StatusPagesConfig
@@ -14,6 +13,7 @@ import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
 import io.ktor.server.response.header
 import io.ktor.server.response.respondBytes
+import io.ktor.util.AttributeKey
 import org.slf4j.LoggerFactory
 
 /** RFC 9457 Problem Details as the Java service writes them. */
@@ -33,6 +33,9 @@ internal class ProblemException(
     override val message: String,
     val headers: Map<String, String> = emptyMap(),
 ) : RuntimeException(message)
+
+/** Marks a response that is deliberately bare (no body), so the 404 handler below leaves it alone. */
+internal val BARE_RESPONSE = AttributeKey<Unit>("bareResponse")
 
 private val log = LoggerFactory.getLogger("com.paulrule.mathapi.adapter.inbound.web.Problems")
 private val PROBLEM_JSON = ContentType("application", "problem+json")
@@ -58,6 +61,16 @@ internal fun frameworkProblem(
     headers: Map<String, String> = emptyMap(),
 ) = ProblemException(status, ABOUT_BLANK, status.description, detail, headers)
 
+/** Spring's 405 for a method the path does not serve (RB-30). */
+internal fun methodNotAllowed(
+    call: ApplicationCall,
+    allow: String,
+) = frameworkProblem(
+    HttpStatusCode.MethodNotAllowed,
+    "Method '${call.request.httpMethod.value}' is not supported.",
+    mapOf(HttpHeaders.Allow to allow),
+)
+
 /** The catch-all: logs the failure and answers with a fixed detail, so no internals reach the client (RB-13). */
 internal fun unexpected(cause: Throwable): ProblemException {
     log.error("Unexpected failure", cause)
@@ -73,8 +86,7 @@ internal suspend fun ApplicationCall.respondProblem(problem: ProblemException) {
         return
     }
     val body = Problem(problem.type, problem.title, problem.status.value, problem.message, request.path())
-    // HEAD gets the headers only, as from the Java service.
-    val bytes = if (request.httpMethod == HttpMethod.Head) ByteArray(0) else JSON_MAPPER.writeValueAsBytes(body)
+    val bytes = bodyUnlessHead { JSON_MAPPER.writeValueAsBytes(body) }
     respondBytes(bytes, PROBLEM_JSON, problem.status)
 }
 
@@ -92,6 +104,7 @@ fun StatusPagesConfig.problemDetails() {
     exception<ProblemException> { call, e -> call.respondProblem(e) }
     exception<Throwable> { call, e -> call.respondProblem(unexpected(e)) }
     status(HttpStatusCode.NotFound) { call, _ ->
+        if (call.attributes.contains(BARE_RESPONSE)) return@status
         call.respondProblem(frameworkProblem(HttpStatusCode.NotFound, "No static resource ${call.request.path().trim('/')}."))
     }
 }
