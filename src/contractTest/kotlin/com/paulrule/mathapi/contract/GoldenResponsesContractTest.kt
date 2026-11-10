@@ -8,6 +8,10 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.io.File
 import java.nio.charset.Charset
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * Compares the service's real responses with those recorded from the Java service, to catch behaviour no test
@@ -48,7 +52,7 @@ class GoldenResponsesContractTest {
     }
 
     private fun capture(case: Case): ObjectNode {
-        val response = send(case.method, case.path, case.body, case.headers, case.charset)
+        val response = send(case.method, case.path, case.body, withLastModifiedFilledIn(case), case.charset)
         // A multipart/byteranges boundary is random on each response; it would never replay equal.
         val boundary = response.contentType?.substringAfter("boundary=", "")?.ifEmpty { null }
         val node = JsonNodeFactory.instance.objectNode()
@@ -56,6 +60,8 @@ class GoldenResponsesContractTest {
         for (header in RECORDED_HEADERS) {
             response.header(header)?.let { node.put(header, normalise(it, boundary)) }
         }
+        // Recorded raw above; a valid date is then replaced: the value is install-specific, the presence and format are not.
+        response.header("Last-Modified")?.takeIf { IMF_FIXDATE.matches(it) }?.let { node.put("Last-Modified", LAST_MODIFIED) }
         val text = normalise(response.body, boundary)
         if (response.contentType.orEmpty().contains("json") && text.isNotEmpty()) {
             val json = mapper.readTree(text)
@@ -75,6 +81,15 @@ class GoldenResponsesContractTest {
         return overlay
     }
 
+    /** [case]'s headers with each Last-Modified placeholder replaced by the file's current Last-Modified, in that format. */
+    private fun withLastModifiedFilledIn(case: Case): Map<String, String> {
+        if (case.headers.values.none { it in DATE_FORMATS }) return case.headers
+        val header = send("HEAD", case.path).header("Last-Modified")
+        checkNotNull(header) { "${case.name}: ${case.path} sent no Last-Modified to fill the date in from" }
+        val modified = ZonedDateTime.parse(header, DateTimeFormatter.RFC_1123_DATE_TIME).withZoneSameInstant(ZoneOffset.UTC)
+        return case.headers.mapValues { (_, value) -> DATE_FORMATS[value]?.format(modified) ?: value }
+    }
+
     /** The base URL and any multipart boundary differ between runs and services, so they are recorded as placeholders. */
     private fun normalise(
         value: String,
@@ -91,6 +106,19 @@ class GoldenResponsesContractTest {
     )
 
     companion object {
+        private const val LAST_MODIFIED = "{last-modified}"
+        private const val LAST_MODIFIED_RFC_850 = "{last-modified:rfc850}"
+        private const val LAST_MODIFIED_ASCTIME = "{last-modified:asctime}"
+
+        /** Each date placeholder and the HTTP date format it stands for. */
+        private val DATE_FORMATS =
+            mapOf(
+                LAST_MODIFIED to "EEE, dd MMM yyyy HH:mm:ss 'GMT'",
+                LAST_MODIFIED_RFC_850 to "EEEE, dd-MMM-yy HH:mm:ss 'GMT'",
+                LAST_MODIFIED_ASCTIME to "EEE MMM ppd HH:mm:ss yyyy",
+            ).mapValues { DateTimeFormatter.ofPattern(it.value, Locale.US) }
+        private val IMF_FIXDATE = Regex("[A-Z][a-z]{2}, \\d{2} [A-Z][a-z]{2} \\d{4} \\d{2}:\\d{2}:\\d{2} GMT")
+
         private val RECORDED_HEADERS =
             listOf(
                 "Content-Type",
@@ -438,7 +466,9 @@ class GoldenResponsesContractTest {
                     ),
                 )
                 add(Case("GET /swagger-ui/../v3/api-docs", "GET", "/swagger-ui/%2e%2e/v3/api-docs"))
-                val cssModified = "Sat, 07 Nov 2026 02:54:12 GMT" // the webjar entry's time, the same jar on both sides
+                // Both services send the webjar file's modification time, which differs per install, so the date is filled in
+                // from the service's own Last-Modified at send time (see `withLastModifiedFilledIn`).
+                val cssModified = LAST_MODIFIED
                 add(
                     Case(
                         "GET /swagger-ui/swagger-ui.css, If-Modified-Since",
@@ -476,8 +506,8 @@ class GoldenResponsesContractTest {
                 }
                 val css = "/swagger-ui/swagger-ui.css"
                 for ((name, value) in listOf(
-                    "If-Modified-Since RFC 850" to ("If-Modified-Since" to "Saturday, 07-Nov-26 02:54:12 GMT"),
-                    "If-Modified-Since asctime" to ("If-Modified-Since" to "Sat Nov  7 02:54:12 2026"),
+                    "If-Modified-Since RFC 850" to ("If-Modified-Since" to LAST_MODIFIED_RFC_850),
+                    "If-Modified-Since asctime" to ("If-Modified-Since" to LAST_MODIFIED_ASCTIME),
                     "If-Modified-Since garbage" to ("If-Modified-Since" to "garbage"),
                     "If-Unmodified-Since older" to ("If-Unmodified-Since" to "Fri, 01 Jan 2021 00:00:00 GMT"),
                     "If-Unmodified-Since equal" to ("If-Unmodified-Since" to cssModified),

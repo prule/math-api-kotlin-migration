@@ -4,7 +4,8 @@ Ordered OpenSpec changes. Work them top to bottom with the change workflow in `C
 In progress when you start an item and Done when you archive it.
 
 **Milestones:**
-- **v1 (migration):** items 1–6. Done when the Kotlin service is proven equal to the Java one.
+- **v1 (migration):** items 1–6. Done when the Kotlin service is proven equal to the Java one. **Complete
+  (2026-11-11):** see `docs/MIGRATION-LOG.md` → Equivalence.
 - **v2 (new behaviour):** item 7 onwards.
 
 Gate before item 1: audit the Java repo (see `CLAUDE.md` → Milestone gates).
@@ -16,7 +17,7 @@ Gate before item 1: audit the Java repo (see `CLAUDE.md` → Milestone gates).
 | 3 | `add-calculation` | `calculation` | Done |
 | 4 | `add-service-health` | `service-health` | Done |
 | 5 | `add-api-documentation` | `api-documentation` | Done |
-| 6 | `prove-equivalence` | (none: verification) | Not started |
+| 6 | `prove-equivalence` | (none: verification) | Done |
 | 7 | `add-calculation-history` | `calculation-history` | Not started |
 | 8 | `compare-recovered-specs` | (none: exercise write-up) | Not started |
 
