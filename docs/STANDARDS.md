@@ -7,7 +7,7 @@ code, not from that document.
 
 ## 1. Stack
 
-- Kotlin (JVM toolchain 25), Ktor (Netty), Jackson for JSON (from item 3), Gradle Kotlin DSL with the wrapper.
+- Kotlin (JVM toolchain 25), Ktor (Netty), Jackson 2 (`com.fasterxml`, the version Ktor brings) for JSON, Gradle Kotlin DSL with the wrapper.
 - `./gradlew build` is the gate: compile, tests, ArchUnit, and `spotlessCheck` (ktlint).
 - CI runs `./gradlew build` on every pull request and every push to `main`.
 
