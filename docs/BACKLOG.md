@@ -11,7 +11,7 @@ Gate before item 1: audit the Java repo (see `CLAUDE.md` → Milestone gates).
 
 | # | Change | Capability | Status |
 |---|---|---|---|
-| 1 | `add-kotlin-skeleton` | (none: tooling and standards) | Not started |
+| 1 | `add-kotlin-skeleton` | (none: tooling and standards) | Done |
 | 2 | `add-contract-suite` | (none: test harness) | Not started |
 | 3 | `add-calculation` | `calculation` | Not started |
 | 4 | `add-service-health` | `service-health` | Not started |
@@ -62,7 +62,8 @@ maps to at least one contract test. The suite is expected to fail against Kotlin
 > Port the domain (`Operation`, `Calculation`, its exceptions), the application layer (`PerformCalculation`) and
 > the web adapter (route, DTOs, StatusPages, Jackson with `StreamReadConstraints`), inside out, each with its
 > ported unit tests (`OperationTest`, `CalculationTest`, and `CalculationControllerTest` on `testApplication`).
-> Cover every hard spot in `MIGRATION-PLAN.md` §5.
+> Cover every hard spot in `MIGRATION-PLAN.md` §5. Add an ArchUnit live fixture for the domain rule's Jackson ban
+> (now provable, because Jackson is on the classpath), and remove the three empty-layer `shortcut:` allowances.
 
 **Done when:** the calculation contract tests pass against both services.
 
