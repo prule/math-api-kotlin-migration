@@ -1,8 +1,10 @@
 package com.paulrule.mathapi
 
+import com.paulrule.mathapi.adapter.inbound.web.apiDocsRoutes
 import com.paulrule.mathapi.adapter.inbound.web.calculationRoutes
 import com.paulrule.mathapi.adapter.inbound.web.healthRoutes
 import com.paulrule.mathapi.adapter.inbound.web.problemDetails
+import com.paulrule.mathapi.adapter.inbound.web.swaggerUiRoutes
 import com.paulrule.mathapi.config.UseCaseConfig
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -26,5 +28,7 @@ fun Application.module() {
     routing {
         calculationRoutes(useCases.performCalculation)
         healthRoutes()
+        apiDocsRoutes()
+        swaggerUiRoutes()
     }
 }

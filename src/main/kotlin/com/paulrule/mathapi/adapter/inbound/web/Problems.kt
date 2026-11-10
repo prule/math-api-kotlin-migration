@@ -37,6 +37,27 @@ internal class ProblemException(
 /** Marks a response that is deliberately bare (no body), so the 404 handler below leaves it alone. */
 internal val BARE_RESPONSE = AttributeKey<Unit>("bareResponse")
 
+/** Marks an error Spring writes without its download protection (the springdoc-transformed files' 405). */
+internal val NO_DOWNLOAD_PROTECTION = AttributeKey<Unit>("noDownloadProtection")
+
+// Spring's safe extensions for its reflected-file-download protection.
+private val SAFE_EXTENSIONS =
+    setOf("txt", "text", "yml", "properties", "csv", "json", "xml", "atom", "rss", "png", "jpe", "jpeg", "jpg", "gif", "wbmp", "bmp")
+
+/**
+ * Spring's reflected-file-download protection: an error body for a path whose last segment (or its `;` parameters)
+ * has an extension Spring doesn't consider safe gets `Content-Disposition: inline;filename=f.txt`.
+ */
+internal fun ApplicationCall.protectDownload() {
+    if (attributes.contains(NO_DOWNLOAD_PROTECTION)) return
+    val segment = request.path().substringAfterLast('/')
+
+    fun unsafe(name: String) = name.substringAfterLast('.', "").lowercase().let { it.isNotEmpty() && it !in SAFE_EXTENSIONS }
+    if (unsafe(segment.substringBefore(';')) || unsafe(segment.substringAfter(';', ""))) {
+        response.header(HttpHeaders.ContentDisposition, "inline;filename=f.txt")
+    }
+}
+
 private val log = LoggerFactory.getLogger("com.paulrule.mathapi.adapter.inbound.web.Problems")
 private val PROBLEM_JSON = ContentType("application", "problem+json")
 private const val ABOUT_BLANK = "about:blank"
@@ -77,6 +98,9 @@ internal fun unexpected(cause: Throwable): ProblemException {
     return frameworkProblem(HttpStatusCode.InternalServerError, "The calculation could not be completed.")
 }
 
+/** This problem's body at [instance], as it goes on the wire. */
+internal fun ProblemException.toBody(instance: String) = Problem(type, title, status.value, message, instance)
+
 internal suspend fun ApplicationCall.respondProblem(problem: ProblemException) {
     problem.headers.forEach { (name, value) -> response.header(name, value) }
     // With an unparseable Accept, Spring can write no body at all: status and headers only (RB-27).
@@ -85,22 +109,27 @@ internal suspend fun ApplicationCall.respondProblem(problem: ProblemException) {
         respondBytes(ByteArray(0), status = problem.status)
         return
     }
-    val body = Problem(problem.type, problem.title, problem.status.value, problem.message, request.path())
+    protectDownload()
+    val body = problem.toBody(request.path())
     val bytes = bodyUnlessHead { JSON_MAPPER.writeValueAsBytes(body) }
     respondBytes(bytes, PROBLEM_JSON, problem.status)
 }
 
+/** The problem for a domain exception; the API docs build their examples with it too, so they are the real responses. */
+internal fun problemFor(e: UnknownOperationException) =
+    domainProblem(HttpStatusCode.BadRequest, "unknown-operation", "Unknown operation", e.message!!)
+
+internal fun problemFor(e: OperandOutOfRangeException) =
+    domainProblem(HttpStatusCode.BadRequest, "operand-out-of-range", "Operand out of range", e.message!!)
+
+internal fun problemFor(e: DivisionByZeroException) =
+    domainProblem(HttpStatusCode.UnprocessableEntity, "division-by-zero", "Division by zero", e.message!!)
+
 /** Every error as Problem Details (RB-11 to RB-14, RB-30). */
 fun StatusPagesConfig.problemDetails() {
-    exception<UnknownOperationException> { call, e ->
-        call.respondProblem(domainProblem(HttpStatusCode.BadRequest, "unknown-operation", "Unknown operation", e.message!!))
-    }
-    exception<OperandOutOfRangeException> { call, e ->
-        call.respondProblem(domainProblem(HttpStatusCode.BadRequest, "operand-out-of-range", "Operand out of range", e.message!!))
-    }
-    exception<DivisionByZeroException> { call, e ->
-        call.respondProblem(domainProblem(HttpStatusCode.UnprocessableEntity, "division-by-zero", "Division by zero", e.message!!))
-    }
+    exception<UnknownOperationException> { call, e -> call.respondProblem(problemFor(e)) }
+    exception<OperandOutOfRangeException> { call, e -> call.respondProblem(problemFor(e)) }
+    exception<DivisionByZeroException> { call, e -> call.respondProblem(problemFor(e)) }
     exception<ProblemException> { call, e -> call.respondProblem(e) }
     exception<Throwable> { call, e -> call.respondProblem(unexpected(e)) }
     status(HttpStatusCode.NotFound) { call, _ ->
