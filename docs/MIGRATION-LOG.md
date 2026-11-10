@@ -19,19 +19,57 @@ Kotlin default next to each one.
 | Timeouts (request, idle) | Tomcat defaults | (item 6) |
 | HTTP/2 | Not enabled (Tomcat default) | (item 6) |
 | Graceful shutdown | Spring Boot default (graceful) | (item 6) |
-| Framework error `detail` wording (404/405/406/415) | Spring's own, e.g. `No static resource api/v1/nope.`; recorded in golden files only | (item 6: copy it, or accept a difference) |
 | The 500 handler (RB-13) | Not reachable over HTTP; the Java test calls it directly | Unit test in item 3 |
 
 ## Accepted differences
 
 Each place the Kotlin service behaves differently from Java, agreed with the user, with the reason.
 
-None yet.
+1. **No YAML** (RB-22; user decision, item 3, 2026-11-10). The Java service accepts `application/yaml` request
+   bodies and answers in YAML for `Accept: application/yaml`. That is probably an accident: springdoc puts the YAML
+   Jackson module on the classpath, and Spring Boot registers it. The Kotlin service supports JSON only:
+   - a YAML request body gets 415;
+   - `Accept: application/yaml` on a success gets 406;
+   - the `Accept` header on 406/415 responses, and the 406 detail list, drop `application/yaml`.
+
+   The contract tests branch on the service (`isJavaReference`). The golden diff applies
+   `golden/accepted-differences.json` on top of the Java recordings when it runs against Kotlin. The overlay
+   changes these 15 golden cases, and nothing else:
+   - the two YAML cases: `yaml request` (now 415) and `accept yaml` (now 406);
+   - 10 cases where only the 415 `Accept` header list changes: `no content type`, `text/plain`, and the 8
+     `content type '…'` cases for `TEXT/PLAIN`, `text/plain; charset=ISO-8859-1`, `application/octet-stream`,
+     `image/png`, `application/x-www-form-urlencoded`, `multipart/form-data; boundary=x`, `garbage` and
+     `application/xml`;
+   - 3 cases where the 406 `Accept` header and detail list change: `accept text/plain`, `accept 'text/*'` and
+     `accept 'application/xml'`;
+   - 4 more 415 `Accept`-header-only cases added in item 3's code review: `accept garbage, text/plain`,
+     `content type with quoted ';'`, `no body, text/plain` and `content type 'application/json;charset=bogus'`.
+
+2. **A wildcard request Content-Type is 415, not 500** (RB-28; user decision, item 3 code review, 2026-11-10).
+   Java answers `*/*`, `application/*` and `application/*+json` with a 500 "could not be completed" (source defect
+   4). Kotlin answers 415 with the usual detail, for example `Content-Type '*/*;charset=UTF-8' is not supported.`
+   Overlay cases: `content type '*/*'`, `content type 'application/*'`, `content type 'application/*+json'`.
+3. **Tomcat path normalisation is not copied** (user decision, item 3 code review). Java (Tomcat) treats
+   `//api/v1/calculations` as unknown (404), and strips path parameters, so `/api/v1/calculations;jsessionid=1`
+   is the endpoint (200). Ktor collapses the double slash (200) and keeps the path parameter (404). Overlay cases:
+   `double slash`, `path parameter`.
+4. **OPTIONS and TRACE extras are not copied** (user decision, item 3 code review):
+   - Java's `OPTIONS` also sends an empty `Accept-Patch:` header (not recorded in the golden file);
+   - a CORS preflight (`Origin` plus `Access-Control-Request-Method`) gets `Allow: GET, HEAD, POST, PUT, DELETE, OPTIONS, PATCH`;
+   - `TRACE` gets Spring Boot's own error JSON with a six-method `Allow`.
+
+   Kotlin answers these like any other `OPTIONS`, or like any other unsupported method (405 problem,
+   `Allow: POST`). Overlay cases: `CORS preflight`, `TRACE calculations`.
+
+The overlay holds 26 cases in all: 19 for difference 1, 3 for difference 2, 2 for difference 3, and 2 for difference 4.
+
+**Decided to copy (not a difference):** Spring's framework error wording for 404/405/406/415 (RB-30). This was a
+user decision in item 3.
 
 ## Source defects
 
 Bugs in the Java code, found by `/ponytail:ponytail-audit` (2026-11-10, gate before item 1) and confirmed with curl
-against the running service. **They are ported faithfully** and pinned in
+against the running service. Defects 1-3 **are ported faithfully** and pinned in
 `src/contractTest/.../FrameworkDefaultsContractTest.kt`. Fix them only after the migration, each as a new backlog item.
 
 1. **The size limit counts bytes, but the error says characters** (Java `src/main/resources/application.yaml:10`,
@@ -46,6 +84,13 @@ against the running service. **They are ported faithfully** and pinned in
 3. **Duplicate keys are accepted silently** (Jackson default; RB-8b)
    - `{"operation":"ADD","a":1,"a":9,"b":2}` returns `a = 9, result 11`.
    - Fix later: turn on strict duplicate detection, so duplicates become `invalid-request`.
+
+4. **A wildcard Content-Type gets 500** (found in item 3's code review, not by the audit; RB-28)
+   - A request with `Content-Type: */*`, `application/*` or `application/*+json` reaches the catch-all and gets
+     500 "The calculation could not be completed." Spring tries to read the body as a wildcard type, which fails
+     inside the converter rather than as 415.
+   - Kotlin does **not** port this. It answers 415 (Accepted difference 2).
+   - Fix later on the Java side only, if Java lives on.
 
 The audit's verdict was healthy: nothing breaks at the expected load. `PerformCalculation` only passes the call
 through, but it is kept on purpose, because the clean architecture is a goal of the migration.

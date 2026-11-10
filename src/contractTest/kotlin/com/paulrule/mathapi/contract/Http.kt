@@ -6,6 +6,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.nio.charset.Charset
 
 /** The service under test. Required: a default would make "green" meaningless if it pointed at the wrong service. */
 val BASE_URL: String =
@@ -26,6 +27,13 @@ fun validBodyPaddedTo(length: Int): String {
 }
 
 val mapper = ObjectMapper()
+
+/**
+ * True when BASE_URL is the Java reference service. Spring Boot's own /error controller answers status 999, and no
+ * RB row asks Kotlin to copy it (keep /error out of the corpus). Used by the golden record guard and by tests
+ * that assert one side of an accepted difference (docs/MIGRATION-LOG.md).
+ */
+val isJavaReference: Boolean by lazy { get("/error").body.contains("\"status\":999") }
 
 // HTTP/1.1: the JDK client's default h2c upgrade adds headers neither service sees in production.
 private val client: HttpClient =
@@ -58,11 +66,12 @@ fun send(
     path: String,
     body: String? = null,
     headers: Map<String, String> = emptyMap(),
+    charset: Charset = Charsets.UTF_8,
 ): Response {
     val request =
         HttpRequest
             .newBuilder(URI.create(BASE_URL + path))
-            .method(method, body?.let { HttpRequest.BodyPublishers.ofString(it) } ?: HttpRequest.BodyPublishers.noBody())
+            .method(method, body?.let { HttpRequest.BodyPublishers.ofString(it, charset) } ?: HttpRequest.BodyPublishers.noBody())
     headers.forEach { (name, value) -> request.header(name, value) }
     val response = client.send(request.build(), HttpResponse.BodyHandlers.ofString())
     return Response(response.statusCode(), response.headers().map(), response.body())
